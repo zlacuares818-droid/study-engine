@@ -1,0 +1,2358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Study Hub 9.1 (Music Fix)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Fredoka:wght@300;400;500;600&family=Dongle:wght@300;400;700&family=Nunito:wght@400;700&family=Lora:wght@400;700&display=swap');
+        
+        :root {
+            /* LIGHT MODE - Strawberry Milk Theme (Default) */
+            --bg-main: #fff0f5;
+            --bg-card: #ffffff;
+            --text-primary: #5c4b51;
+            --text-secondary: #988086;
+            --border-color: #fce7f3;
+            --accent-color: #fb7185;       
+            --accent-hover: #f43f5e;
+            --bg-secondary: #fff5f7;
+            --input-bg: #ffffff;
+            --shadow-soft: 0 8px 30px rgba(251, 113, 133, 0.15);
+            --radius-main: 2.5rem;
+            --radius-btn: 1.5rem;
+            
+            /* Typography Variables */
+            --font-body: 'Quicksand', sans-serif;
+            --font-display: 'Fredoka', sans-serif;
+            
+            /* Hint Colors (Light) */
+            --hint-bg: #fffbeb;
+            --hint-text: #d97706;
+            --hint-border: #fcd34d;
+        }
+
+        .dark-mode {
+            /* Dark mode variables are set dynamically by JS based on palette & level */
+            --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Dark Mode Input Optimization */
+        .dark-mode input::placeholder, 
+        .dark-mode textarea::placeholder, 
+        .dark-mode select {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        /* Focus Mode Overrides */
+        body.focus-mode .side-container,
+        body.focus-mode #settings-btn,
+        body.focus-mode .editable-header,
+        body.focus-mode #bg-decoration,
+        body.focus-mode #header-controls {
+            display: none !important;
+        }
+        
+        body.focus-mode {
+            background: var(--bg-main) !important;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            padding: 0 !important;
+        }
+
+        body.focus-mode .main-layout {
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.focus-mode #root {
+            max-width: 900px;
+            width: 95%;
+            height: 90vh;
+        }
+        
+        body.focus-mode #main-card {
+            height: 100%;
+            border-width: 4px;
+            box-shadow: 0 0 0 100vmax var(--bg-main); /* Mask everything else */
+            z-index: 999;
+        }
+
+        body.focus-mode .cat-ears { display: none; } /* Hide ears in focus mode for clean look */
+        
+        body.focus-mode #exit-focus-btn {
+            display: block !important;
+        }
+
+        /* Font Styles Classes */
+        body.font-style-cute { --font-body: 'Quicksand', sans-serif; --font-display: 'Fredoka', sans-serif; }
+        body.font-style-clean { --font-body: 'Nunito', sans-serif; --font-display: 'Nunito', sans-serif; }
+        body.font-style-serif { --font-body: 'Lora', serif; --font-display: 'Lora', serif; }
+
+        /* Font Size Classes applied to HTML */
+        html.text-sm { font-size: 14px; }
+        html.text-md { font-size: 16px; }
+        html.text-lg { font-size: 18px; }
+        html.text-xl { font-size: 20px; }
+
+        body { 
+            font-family: var(--font-body); 
+            background-color: var(--bg-main); 
+            color: var(--text-primary); 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            padding-top: 1rem;
+            min-height: 100vh;
+            background-image: radial-gradient(var(--border-color) 3px, transparent 3px);
+            background-size: 40px 40px;
+        }
+        
+        @media (min-width: 1024px) {
+            body { padding-top: 4vh; }
+        }
+
+        h1, h2, h3, h4, button { font-family: var(--font-display); }
+
+        /* --- UI COMPONENTS --- */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+        .dark-mode .glass-panel {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            opacity: 0.9;
+        }
+
+        .bg-card { 
+            background-color: var(--bg-card); 
+            border: 3px solid var(--border-color);
+            border-radius: var(--radius-main);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+        }
+
+        /* --- CAT EARS --- */
+        .cat-ears { position: relative; z-index: 10; }
+        .cat-ears::before, .cat-ears::after {
+            content: ''; position: absolute; top: -25px; width: 50px; height: 50px; 
+            background: var(--bg-card); border: 3px solid var(--border-color); 
+            z-index: -1; border-radius: 20px 20px 0 0; 
+            transition: background-color 0.4s, border-color 0.4s;
+        }
+        .cat-ears::before { left: 40px; transform: rotate(-10deg); }
+        .cat-ears::after { right: 40px; transform: rotate(10deg); }
+        
+        @media (max-width: 640px) {
+            .cat-ears::before, .cat-ears::after { top: -15px; width: 40px; height: 40px; }
+        }
+        
+        /* Bubbly Button */
+        .bubbly-btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+            color: white;
+            border: none;
+            border-radius: var(--radius-btn);
+            padding: 12px 24px;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .bubbly-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .bubbly-btn:active { transform: translateY(2px); box-shadow: none; }
+        .bubbly-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-btn);
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .btn-secondary:hover { border-color: var(--accent-color); color: var(--accent-color); background: var(--bg-card); }
+        .btn-secondary.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+
+        /* New Hint Button Style */
+        .btn-hint {
+            background-color: var(--hint-bg);
+            color: var(--hint-text);
+            border: 2px solid var(--hint-border);
+            border-radius: 999px;
+            padding: 6px 16px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-hint:hover {
+            transform: translateY(-2px) scale(1.05);
+            background-color: var(--hint-text);
+            color: var(--bg-card);
+            border-color: var(--hint-text);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        input, textarea, select { 
+            color: var(--text-primary) !important; 
+            background-color: var(--input-bg) !important; 
+            border: 3px solid var(--border-color) !important; 
+            border-radius: 1.5rem;
+            padding: 12px 16px;
+            outline: none;
+            transition: all 0.2s;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 1rem; 
+        }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent-color) !important; box-shadow: 0 0 0 4px var(--border-color); }
+
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+        /* Modified Cat Avatar */
+        .cat-avatar { 
+            font-size: 3.5rem; 
+            transition: transform 0.3s; 
+            display: inline-block; 
+            filter: drop-shadow(0 4px 0 rgba(0,0,0,0.1)); 
+            cursor: pointer;
+        }
+        .cat-avatar:hover { transform: scale(1.1) rotate(5deg); }
+        .cat-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        .cat-speech {
+            position: absolute;
+            top: 5px;
+            left: 65px;
+            background: var(--bg-card);
+            padding: 10px 16px;
+            border-radius: 20px;
+            border-bottom-left-radius: 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            max-width: 200px;
+            z-index: 30;
+            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid var(--accent-color);
+            line-height: 1.4;
+        }
+
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* Tracker Bubbles */
+        .tracker-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--border-color); transition: all 0.3s; }
+        .tracker-dot.current { border-color: var(--accent-color); transform: scale(1.3); background: var(--bg-card); }
+        .tracker-dot.correct { background: #86efac; border-color: #22c55e; }
+        .tracker-dot.wrong { background: #fca5a5; border-color: #ef4444; }
+
+        /* Tables */
+        .sched-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .sched-table th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-color); padding: 5px 10px; text-align: left; opacity: 0.8; }
+        .sched-table td { background: var(--bg-secondary); padding: 12px; font-size: 0.9rem; font-weight: 600; border: 1px solid var(--border-color); }
+        .sched-table tr td:first-child { border-top-left-radius: 15px; border-bottom-left-radius: 15px; border-right: none; }
+        .sched-table tr td:last-child { border-top-right-radius: 15px; border-bottom-right-radius: 15px; border-left: none; }
+
+        /* Calendar Styles */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        @media (min-width: 768px) { .calendar-grid { gap: 8px; } }
+        
+        .calendar-day { aspect-ratio: 1; border-radius: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 4px; cursor: pointer; font-size: 0.8rem; font-weight: bold; border: 2px solid transparent; transition: all 0.2s; position: relative; background: var(--bg-secondary); }
+        @media (min-width: 768px) { .calendar-day { border-radius: 1rem; font-size: 0.9rem; padding-top: 5px; } }
+
+        .calendar-day:hover { transform: scale(1.05); border-color: var(--accent-color); z-index: 2; }
+        .calendar-day.selected { background: var(--accent-color); color: white; border-color: var(--accent-hover); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .calendar-day.today { border-color: var(--text-primary); }
+        .calendar-day.muted { opacity: 0.2; pointer-events: none; }
+        .calendar-day.drag-over { background: var(--accent-color); opacity: 0.7; transform: scale(1.1); box-shadow: 0 0 15px var(--accent-color); z-index: 10; }
+        
+        .event-dot { width: 4px; height: 4px; background-color: var(--accent-hover); border-radius: 50%; margin-top: 2px; }
+        @media (min-width: 768px) { .event-dot { width: 6px; height: 6px; } }
+        .calendar-day.selected .event-dot { background-color: white; }
+        
+        .calendar-header-day { text-align: center; font-size: 0.6rem; font-weight: 900; text-transform: uppercase; color: var(--text-secondary); padding-bottom: 5px; letter-spacing: 1px; }
+        @media (min-width: 768px) { .calendar-header-day { font-size: 0.7rem; } }
+
+        .draggable-event { cursor: grab; }
+        .draggable-event:active { cursor: grabbing; }
+
+        .editable-header:hover { opacity: 0.7; cursor: pointer; text-decoration: underline; text-decoration-style: dashed; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+
+        /* Custom Modal & Toast */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box { background: var(--bg-card); border: 3px solid var(--border-color); border-radius: 2rem; padding: 2rem; width: 90%; max-width: 400px; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center; max-height: 80vh; overflow-y: auto; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        
+        .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--accent-color); color: white; padding: 10px 20px; border-radius: 2rem; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 200; pointer-events: none; }
+        .toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* Mobile Layout Adjustments */
+        @media (max-width: 1023px) {
+            .main-layout { flex-direction: column; align-items: center; gap: 2rem; }
+            .side-container { width: 100% !important; max-width: 100%; margin-top: 0; }
+            #main-card { width: 100%; }
+        }
+        
+        /* Stickers */
+        .sticker-img { position: fixed; z-index: 50; max-width: 150px; max-height: 150px; cursor: default; user-select: none; transition: box-shadow 0.1s; }
+        .sticker-img.editable { cursor: grab; animation: wiggle 2s infinite ease-in-out; }
+        .sticker-img.editable:active { cursor: grabbing; transform: scale(1.1); }
+        .sticker-img.selected { border: 2px dashed var(--accent-color); box-shadow: 0 0 10px var(--accent-color); animation: none; z-index: 60; }
+        
+        /* Sticker Controls */
+        #sticker-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 10px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: flex; gap: 5px; z-index: 999; border: 2px solid var(--accent-color); }
+        
+        @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+        
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(5deg); } 50% { transform: translateY(-20px) rotate(-5deg); } }
+        .floating { animation: float 6s ease-in-out infinite; pointer-events: none; position: fixed; z-index: -1; opacity: 0.2; font-size: 3rem; }
+        
+        .photo-wrapper:hover .delete-photo-btn { opacity: 1; }
+        
+        /* Profile Image */
+        .profile-img-container { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--accent-color); overflow: hidden; margin: 0 auto; position: relative; cursor: pointer; transition: transform 0.2s; background: var(--bg-secondary); }
+        .profile-img-container:hover { transform: scale(1.05); }
+        .profile-img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-edit-icon { position: absolute; bottom: 0; right: 0; left: 0; background: rgba(0,0,0,0.5); color: white; font-size: 0.7rem; padding: 4px; opacity: 0; transition: opacity 0.2s; }
+        .profile-img-container:hover .profile-edit-icon { opacity: 1; }
+
+        /* Exit Focus Button */
+        #exit-focus-btn { display: none; position: fixed; top: 1rem; right: 1rem; z-index: 1000; }
+
+        /* Flashcard Styles */
+        .flashcard-container { perspective: 1000px; width: 100%; max-width: 500px; height: 350px; margin: 0 auto; cursor: pointer; }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; border-radius: 2rem; box-shadow: var(--shadow-soft); }
+        .flashcard-container.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; border: 3px solid var(--border-color); background: var(--bg-card); }
+        /* Dark mode fix: ensure text is readable */
+        .flashcard-back { transform: rotateY(180deg); background: var(--bg-secondary); border-color: var(--accent-color); color: var(--text-primary); }
+
+        /* Quiz Navigator */
+        .quiz-nav-dot { width: 30px; height: 30px; border-radius: 50%; font-size: 12px; display: flex; items-center; justify-content: center; font-weight: bold; cursor: pointer; border: 2px solid transparent; background: var(--bg-secondary); transition: all 0.2s; }
+        .quiz-nav-dot:hover { transform: scale(1.1); }
+        .quiz-nav-dot.active { border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 0 10px var(--accent-color); }
+        .quiz-nav-dot.correct { background: #86efac; color: #14532d; }
+        .quiz-nav-dot.wrong { background: #fca5a5; color: #7f1d1d; }
+        .quiz-nav-dot.skipped { background: #e5e7eb; color: #6b7280; }
+    </style>
+</head>
+<body class="min-h-screen font-style-cute">
+
+    <div id="bg-decoration"></div>
+    <div id="sticker-layer"></div>
+    <div id="sticker-controls" class="hidden animate-[pop_0.2s_ease-out]"></div>
+
+    <button onclick="window.toggleFocusMode()" id="exit-focus-btn" class="bubbly-btn px-4 py-2 text-xs shadow-md bg-red-400 border-red-500">Exit Focus</button>
+
+    <!-- Floating Settings Button -->
+    <div class="fixed top-4 right-4 z-[90] flex flex-col items-end gap-2" id="header-controls">
+        <div class="flex gap-2 items-center">
+            <div id="streak-counter" class="bg-white/30 backdrop-blur-md px-3 py-2 rounded-full border border-white/20 font-black text-sm flex items-center gap-1 shadow-sm text-orange-500" title="Daily Streak">🔥 0</div>
+            <button onclick="window.toggleSettings()" class="bg-white/30 backdrop-blur-md p-3 rounded-full hover:bg-white/50 transition shadow-lg border border-white/20 text-2xl" id="settings-btn">⚙️</button>
+        </div>
+        <!-- Enhanced Settings Menu -->
+        <div id="settings-menu" class="hidden flex-col gap-4 bg-[var(--bg-card)] backdrop-blur-xl p-6 rounded-[2rem] shadow-2xl border border-[var(--border-color)] w-[300px] max-w-[90vw] animate-[pop_0.2s_ease-out] overflow-y-auto max-h-[80vh]">
+            
+            <!-- Aesthetic Section -->
+            <div>
+                <h4 class="text-xs font-black uppercase opacity-50 mb-2 tracking-widest text-[var(--text-primary)]">Aesthetics</h4>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <button onclick="window.toggleTheme()" class="btn-secondary text-xs py-2">🌓 Light/Dark</button>
+                    <button onclick="window.toggleStickerEdit()" id="edit-sticker-btn" class="btn-secondary text-xs py-2">🔓 Edit Stickers</button>
+                </div>
+                
+                <!-- Dark Mode Levels (Only visible in Dark Mode) -->
+                <div id="dark-level-controls" class="hidden grid-cols-3 gap-1 mb-3">
+                     <button onclick="window.setDarkLevel('deep')" class="btn-secondary text-[10px] py-1">Deep</button>
+                     <button onclick="window.setDarkLevel('dim')" class="btn-secondary text-[10px] py-1">Dim</button>
+                     <button onclick="window.setDarkLevel('oled')" class="btn-secondary text-[10px] py-1 bg-black text-white border-gray-800">OLED</button>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="window.setPalette('strawberry')" class="h-10 rounded-xl bg-pink-200 border-2 border-transparent hover:border-pink-400 transition" title="Strawberry"></button>
+                    <button onclick="window.setPalette('matcha')" class="h-10 rounded-xl bg-green-200 border-2 border-transparent hover:border-green-400 transition" title="Matcha"></button>
+                    <button onclick="window.setPalette('ocean')" class="h-10 rounded-xl bg-blue-200 border-2 border-transparent hover:border-blue-400 transition" title="Ocean"></button>
+                    <button onclick="window.setPalette('lavender')" class="h-10 rounded-xl bg-purple-200 border-2 border-transparent hover:border-purple-400 transition" title="Lavender"></button>
+                </div>
+            </div>
+
+            <!-- Typography Section -->
+            <div class="border-t border-[var(--border-color)] pt-4">
+                <h4 class="text-xs font-black uppercase opacity-50 mb-2 tracking-widest text-[var(--text-primary)]">Typography</h4>
+                <div class="flex gap-1 mb-2">
+                    <button onclick="window.setFontSize('text-sm')" class="flex-1 btn-secondary text-xs py-1">Aa</button>
+                    <button onclick="window.setFontSize('text-md')" class="flex-1 btn-secondary text-sm py-1 font-bold">Aa</button>
+                    <button onclick="window.setFontSize('text-lg')" class="flex-1 btn-secondary text-base py-1 font-black">Aa</button>
+                    <button onclick="window.setFontSize('text-xl')" class="flex-1 btn-secondary text-lg py-1 font-black">Aa</button>
+                </div>
+                <div class="flex gap-1">
+                    <button onclick="window.setFontStyle('cute')" class="flex-1 btn-secondary text-[10px] py-1 font-['Quicksand']">Cute</button>
+                    <button onclick="window.setFontStyle('clean')" class="flex-1 btn-secondary text-[10px] py-1 font-['Nunito']">Clean</button>
+                    <button onclick="window.setFontStyle('serif')" class="flex-1 btn-secondary text-[10px] py-1 font-['Lora']">Serif</button>
+                </div>
+            </div>
+
+            <!-- Data & Tools -->
+            <div class="border-t border-[var(--border-color)] pt-4 space-y-2">
+                <h4 class="text-xs font-black uppercase opacity-50 mb-2 tracking-widest text-[var(--text-primary)]">Tools & Data</h4>
+                <div class="flex items-center justify-between bg-[var(--bg-secondary)] p-2 rounded-xl border border-[var(--border-color)]">
+                    <span class="text-xs font-bold ml-2 text-[var(--text-primary)]">🔊 Auto Read Quiz</span>
+                    <input type="checkbox" id="tts-toggle" class="w-5 h-5 accent-[var(--accent-color)]" onchange="window.toggleTTS(this.checked)">
+                </div>
+                 <button onclick="window.toggleFocusMode()" class="btn-secondary w-full text-xs py-2">🧘 Toggle Focus Mode</button>
+                 <div class="grid grid-cols-2 gap-2 mt-2">
+                     <button onclick="window.backupData()" class="btn-secondary text-[10px] py-2">⬇ Export Data</button>
+                     <button onclick="window.triggerImport()" class="btn-secondary text-[10px] py-2">⬆ Import Data</button>
+                 </div>
+            </div>
+
+            <!-- Sticker Action -->
+            <div class="border-t border-[var(--border-color)] pt-4">
+                <button onclick="document.getElementById('sticker-input').click()" class="bubbly-btn w-full text-xs py-3 shadow-md">✨ Add New Sticker</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Button -->
+    <button onclick="window.showInstructions()" class="fixed bottom-4 right-4 z-[90] bg-[var(--accent-color)] text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center font-bold text-xl hover:scale-110 transition border-2 border-white">?</button>
+    
+    <input type="file" id="sticker-input" class="hidden" accept="image/*" onchange="window.addSticker(event)">
+    <input type="file" id="img-insert-input" class="hidden" accept="image/*" onchange="window.handleImageInsert(event)">
+    <input type="file" id="avatar-input" class="hidden" accept="image/*" onchange="window.handleAvatarUpload(event)">
+    <input type="file" id="music-file-input" class="hidden" accept="audio/*" onchange="window.handleLocalMusic(event)">
+
+    <div class="flex main-layout items-start justify-center gap-4 lg:gap-8 w-full max-w-7xl mx-auto p-4 lg:p-6 mb-12">
+        
+        <div id="root" class="w-full lg:max-w-3xl z-10 transition-all duration-300 cat-ears">
+            <div id="main-card" class="bg-card min-h-[600px] lg:min-h-[780px] flex flex-col relative overflow-hidden">
+                </div>
+        </div>
+
+        <div class="side-container w-full lg:w-[380px] flex flex-col gap-6 z-10">
+            
+            <div class="bg-card p-2 flex gap-2 shadow-sm rounded-[2rem]">
+                <button onclick="window.setSideTab('resources')" id="tab-resources" class="flex-1 py-3 text-xs font-bold uppercase rounded-3xl transition-all hover:bg-[var(--bg-secondary)] active">📚 Hub</button>
+                <button onclick="window.setSideTab('schedule')" id="tab-schedule" class="flex-1 py-3 text-xs font-bold uppercase rounded-3xl transition-all hover:bg-[var(--bg-secondary)]">📅 Class</button>
+                <button onclick="window.setSideTab('timer')" id="tab-timer" class="flex-1 py-3 text-xs font-bold uppercase rounded-3xl transition-all hover:bg-[var(--bg-secondary)]">⏲️ Time</button>
+                <button onclick="window.setSideTab('music')" id="tab-music" class="flex-1 py-3 text-xs font-bold uppercase rounded-3xl transition-all hover:bg-[var(--bg-secondary)]">🎵 Music</button>
+                <!-- Profile Button on Mobile also accessible here -->
+                <button onclick="window.setView('profile')" class="flex-none w-10 py-3 text-xl rounded-3xl hover:bg-[var(--bg-secondary)] transition">👤</button>
+            </div>
+
+            <div id="side-content-resources" class="flex flex-col gap-5">
+                <div class="bg-card p-1">
+                    <div class="bg-[var(--bg-secondary)] p-3 rounded-[2rem] flex justify-between items-center mb-1 mx-1 mt-1">
+                        <span class="font-bold text-xs uppercase tracking-widest text-[var(--accent-color)] pl-2">📝 Scratchpad</span>
+                        <button onclick="window.downloadNotes()" class="text-[10px] bg-white dark:bg-black/20 px-3 py-1 rounded-full font-bold hover:scale-105 transition">💾 Save</button>
+                    </div>
+                    <textarea id="note-area" class="w-full h-[180px] p-4 text-sm bg-transparent border-none! shadow-none! resize-none custom-scroll focus:box-shadow-none!" placeholder="Type your quick notes here..." oninput="window.saveNotes()"></textarea>
+                </div>
+                
+                <div class="bg-card p-5 text-center">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="text-3xl">🖼️</div>
+                        <h4 class="text-[12px] font-black uppercase opacity-60">Gallery</h4>
+                        <button onclick="document.getElementById('photo-input').click()" class="btn-secondary px-3 py-1 text-[10px]">+ Add</button>
+                    </div>
+                    <div id="photo-gallery" class="flex gap-2 overflow-x-auto pb-2 custom-scroll min-h-[140px] items-center"></div>
+                </div>
+
+                <div class="bg-card p-5 text-center">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="text-3xl">📎</div>
+                        <h4 class="text-[12px] font-black uppercase opacity-60">Files</h4>
+                        <button onclick="document.getElementById('file-input').click()" class="btn-secondary px-3 py-1 text-[10px]">+ Add</button>
+                    </div>
+                    <div id="file-list" class="flex flex-col gap-2 max-h-[200px] overflow-y-auto custom-scroll"></div>
+                </div>
+            </div>
+
+            <div id="side-content-schedule" class="hidden flex flex-col gap-4">
+                <div class="bg-card p-6 min-h-[350px] relative">
+                    <h3 class="font-bold text-center text-[var(--accent-color)] uppercase tracking-widest mb-6 text-sm bg-[var(--bg-secondary)] py-2 rounded-full mx-auto w-3/4">Weekly Classes</h3>
+                    <div class="overflow-y-auto max-h-[350px] custom-scroll">
+                        <table class="sched-table" id="side-schedule-table"></table>
+                    </div>
+                    <div class="text-center mt-6">
+                         <button onclick="window.setView('planner')" class="text-[10px] font-bold text-[var(--text-secondary)] hover:text-[var(--accent-color)] transition">✏️ Edit in Planner</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="side-content-timer" class="hidden flex flex-col gap-4">
+                <div class="bg-card p-8 flex flex-col items-center text-center">
+                    <div class="text-7xl mb-4 animate-bounce drop-shadow-sm" id="timer-icon">🍅</div>
+                    <div class="text-6xl font-black mb-8 text-[var(--text-primary)] font-display tracking-tight" id="timer-display">25:00</div>
+                    <div class="flex gap-4 w-full justify-center mb-8">
+                        <button onclick="window.toggleTimer()" id="btn-timer-toggle" class="bubbly-btn text-2xl w-16 h-16 flex items-center justify-center shadow-lg">▶</button>
+                        <button onclick="window.resetTimer()" class="btn-secondary text-2xl w-16 h-16 flex items-center justify-center hover:rotate-180 transition duration-500">↺</button>
+                    </div>
+                    <div class="flex items-center gap-3 w-full bg-[var(--bg-secondary)] p-2 rounded-[1.5rem] border border-[var(--border-color)]">
+                        <input type="number" id="timer-input" value="25" class="flex-1 p-2 text-center text-sm bg-transparent! border-none! shadow-none!">
+                        <button onclick="window.setTimerDuration()" class="bubbly-btn py-2 px-4 text-xs shadow-none!">Set Min</button>
+                    </div>
+                    <!-- Pomodoro Stats -->
+                    <div id="pomodoro-stats" class="mt-4 w-full bg-[var(--bg-secondary)] p-4 rounded-xl text-center border border-[var(--border-color)]">
+                        <span class="text-[10px] font-black uppercase opacity-50 block mb-1">Focus Analytics</span>
+                        <div class="text-2xl font-black text-[var(--accent-color)]" id="pomodoro-total">0m</div>
+                        <div class="text-[10px] opacity-60">Total Focus Time</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Music Player Side Panel -->
+            <div id="side-content-music" class="hidden flex flex-col gap-4">
+                <div class="bg-card p-6 flex flex-col gap-4">
+                    <h3 class="font-bold text-center text-[var(--accent-color)] uppercase tracking-widest text-sm bg-[var(--bg-secondary)] py-2 rounded-full">Lo-Fi Player</h3>
+                    
+                    <!-- Player Embed Container -->
+                    <div id="music-player-container" class="rounded-xl overflow-hidden bg-black/5 min-h-[150px] flex items-center justify-center border border-[var(--border-color)] relative">
+                        <span class="text-xs opacity-40">No music loaded</span>
+                        <div id="yt-player-target"></div>
+                        <audio id="local-audio-player" controls class="w-full hidden absolute bottom-0"></audio>
+                    </div>
+
+                    <!-- Inputs -->
+                    <div class="space-y-2">
+                        <div class="flex gap-2">
+                            <input type="text" id="music-url-input" placeholder="Paste YouTube/Spotify Link..." class="flex-1 text-[10px]">
+                            <button onclick="window.loadMusicUrl()" class="btn-secondary px-3">Load</button>
+                        </div>
+                        <p class="text-[10px] text-center opacity-50">- OR -</p>
+                        <button onclick="document.getElementById('music-file-input').click()" class="bubbly-btn w-full text-xs py-2">📂 Upload Local MP3</button>
+                        <p class="text-[9px] opacity-40 italic text-center pt-2">Tip: Use Lyric videos or Lofi streams if official music videos are blocked.</p>
+                    </div>
+                    
+                    <!-- Presets -->
+                    <div class="mt-2">
+                        <span class="text-[10px] font-bold uppercase opacity-50 block mb-2">Vibe Presets</span>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="window.loadPreset('lofi')" class="bg-[var(--bg-secondary)] text-[10px] px-2 py-1 rounded-lg border hover:border-[var(--accent-color)]">☕ Lo-Fi Girl</button>
+                            <button onclick="window.loadPreset('piano')" class="bg-[var(--bg-secondary)] text-[10px] px-2 py-1 rounded-lg border hover:border-[var(--accent-color)]">🎹 Piano</button>
+                            <button onclick="window.loadPreset('rain')" class="bg-[var(--bg-secondary)] text-[10px] px-2 py-1 rounded-lg border hover:border-[var(--accent-color)]">🌧️ Rain</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center opacity-40 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">
+                Study Hub 9.1 🎀
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="photo-input" class="hidden" accept="image/*" onchange="window.handlePhotoUpload(event)" multiple>
+    <input type="file" id="file-input" class="hidden" onchange="window.handleFileUpload(event)" multiple>
+    <input type="file" id="backup-input" class="hidden" accept=".json" onchange="window.importBackup(event)">
+
+    <div id="media-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-md p-4" onclick="window.closeModal()">
+        <div class="relative max-w-5xl max-h-screen p-2 bg-white rounded-2xl"><div id="modal-content"></div></div>
+    </div>
+
+    <!-- Custom Modal System -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="text-4xl mb-4 animate-bounce" id="modal-icon">✨</div>
+            <h3 class="font-black text-xl mb-4 text-[var(--accent-color)]" id="modal-title">Notice</h3>
+            <div id="modal-body" class="mb-6 text-sm font-bold opacity-80 custom-scroll" style="max-height: 50vh; overflow-y: auto;"></div>
+            <div id="modal-actions" class="flex gap-2 justify-center"></div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Action Complete!</div>
+
+    <script>
+        /* --- HELPER: LEVENSHTEIN DISTANCE --- */
+        function getLevenshtein(a, b) {
+            const matrix = [];
+            for(let i=0; i<=b.length; i++) matrix[i] = [i];
+            for(let j=0; j<=a.length; j++) matrix[0][j] = j;
+            for(let i=1; i<=b.length; i++){
+                for(let j=1; j<=a.length; j++){
+                    if(b.charAt(i-1) == a.charAt(j-1)) matrix[i][j] = matrix[i-1][j-1];
+                    else matrix[i][j] = Math.min(matrix[i-1][j-1]+1, matrix[i][j-1]+1, matrix[i-1][j]+1);
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        /* --- CONFIGURATION --- */
+        const COLOR_PALETTES = {
+            strawberry: {
+                name: "Strawberry",
+                icon: "🍓",
+                cat: "🐱",
+                emojis: ['🐱', '🍓', '🥛', '🍰', '🌸', '🎀', '🧸', '🍧', '🍥'],
+                light: { '--bg-main': '#fff0f5', '--bg-card': '#ffffff', '--text-primary': '#5c4b51', '--text-secondary': '#988086', '--border-color': '#fce7f3', '--accent-color': '#fb7185', '--accent-hover': '#f43f5e', '--bg-secondary': '#fff5f7', '--input-bg': '#ffffff', '--hint-bg': '#fffbeb', '--hint-text': '#d97706', '--hint-border': '#fcd34d' },
+                dark: { '--bg-main': '#1a0b12', '--bg-card': '#29141d', '--text-primary': '#e2d9e6', '--text-secondary': '#9e95a3', '--border-color': '#4a2533', '--accent-color': '#fb7185', '--accent-hover': '#f43f5e', '--bg-secondary': '#211018', '--input-bg': '#29141d', '--hint-bg': '#451a03', '--hint-text': '#fbbf24', '--hint-border': '#d97706' }
+            },
+            matcha: {
+                name: "Matcha",
+                icon: "🍵",
+                cat: "🐸", 
+                emojis: ['🐸', '🍵', '🌿', '🌱', '🎋', '🍏', '🥒', '🥝', '🐢'],
+                light: { '--bg-main': '#f0fff4', '--bg-card': '#ffffff', '--text-primary': '#2d4a3e', '--text-secondary': '#6c8c7f', '--border-color': '#dcfce7', '--accent-color': '#4ade80', '--accent-hover': '#22c55e', '--bg-secondary': '#f0fdf4', '--input-bg': '#ffffff', '--hint-bg': '#ecfccb', '--hint-text': '#3f6212', '--hint-border': '#84cc16' },
+                dark: { '--bg-main': '#0a1f12', '--bg-card': '#143020', '--text-primary': '#e0f2e9', '--text-secondary': '#8da69a', '--border-color': '#204a33', '--accent-color': '#4ade80', '--accent-hover': '#22c55e', '--bg-secondary': '#0e261a', '--input-bg': '#143020', '--hint-bg': '#1a2e05', '--hint-text': '#bef264', '--hint-border': '#4d7c0f' }
+            },
+            ocean: {
+                name: "Ocean",
+                icon: "🌊",
+                cat: "🐳",
+                emojis: ['🐳', '🌊', '🐬', '🧊', '💧', '🥣', '🦕', '🥶', '💎'],
+                light: { '--bg-main': '#f0f9ff', '--bg-card': '#ffffff', '--text-primary': '#334155', '--text-secondary': '#64748b', '--border-color': '#e0f2fe', '--accent-color': '#38bdf8', '--accent-hover': '#0ea5e9', '--bg-secondary': '#f0f9ff', '--input-bg': '#ffffff', '--hint-bg': '#e0f2fe', '--hint-text': '#0369a1', '--hint-border': '#7dd3fc' },
+                dark: { '--bg-main': '#0b1624', '--bg-card': '#152538', '--text-primary': '#e2e8f0', '--text-secondary': '#94a3b8', '--border-color': '#233954', '--accent-color': '#38bdf8', '--accent-hover': '#0ea5e9', '--bg-secondary': '#0e1c2e', '--input-bg': '#152538', '--hint-bg': '#082f49', '--hint-text': '#7dd3fc', '--hint-border': '#0369a1' }
+            },
+            lavender: {
+                name: "Lavender",
+                icon: "💜",
+                cat: "🦄",
+                emojis: ['🦄', '☂️', '🍇', '🔮', '🍆', '👾', '👿', '😈', '🌂'],
+                light: { '--bg-main': '#faf5ff', '--bg-card': '#ffffff', '--text-primary': '#4c1d95', '--text-secondary': '#7c3aed', '--border-color': '#f3e8ff', '--accent-color': '#a78bfa', '--accent-hover': '#8b5cf6', '--bg-secondary': '#f5f3ff', '--input-bg': '#ffffff', '--hint-bg': '#f3e8ff', '--hint-text': '#6b21a8', '--hint-border': '#d8b4fe' },
+                dark: { '--bg-main': '#170f24', '--bg-card': '#251a36', '--text-primary': '#ede9fe', '--text-secondary': '#a78bfa', '--border-color': '#3d2a54', '--accent-color': '#c084fc', '--accent-hover': '#a855f7', '--bg-secondary': '#1e142e', '--input-bg': '#251a36', '--hint-bg': '#3b0764', '--hint-text': '#e9d5ff', '--hint-border': '#7e22ce' }
+            }
+        };
+        
+        const THEMES = {
+            light: { icon: '☀️' }, 
+            dark: { icon: '🌙' }
+        };
+        
+        const PROMPT_TEMPLATE = `Please create a JSON list of 5-10 quiz questions about [TOPIC]. Structure:
+[
+  { 
+    "type": "mc", 
+    "question": "Question text?", 
+    "options": ["Option A", "Option B"], 
+    "answer": "Option A",
+    "hint": "Short helpful clue.",
+    "explanation": "Brief explanation.",
+    "image": "OPTIONAL: URL or Base64 string for image flashcard"
+  },
+  { 
+    "type": "id", 
+    "question": "Definition of X?", 
+    "answer": "Term (Short Answer)",
+    "hint": "Short clue.",
+    "explanation": "Brief context."
+  }
+]
+IMPORTANT: For 'id' type questions, keep answers to 1-3 words max. Avoid long sentences. No markdown.`;
+
+        window.appState = {
+            view: 'welcome',
+            editorMode: 'visual',
+            theme: 'light', // light or dark
+            darkLevel: 'deep', // deep (default), dim, oled
+            palette: 'strawberry',
+            fontSize: 'text-md', // text-sm, text-md, text-lg, text-xl
+            fontStyle: 'cute', // cute, clean, serif
+            ttsEnabled: false,
+            focusMode: false,
+            streak: { count: 0, lastDate: null },
+            title: 'Study Hub',
+            subtitle: 'Your aesthetic learning space ☁️',
+            userProfile: {
+                name: 'Student',
+                bio: 'Ready to learn! ✨',
+                avatar: null // base64
+            },
+            subjects: [],
+            currentSubject: null,
+            currentLesson: null,
+            planner: { 
+                events: [], 
+                schedule: [], 
+                selectedDate: new Date().toISOString().split('T')[0],
+                viewDate: new Date().toISOString().split('T')[0] 
+            },
+            clipboardEvent: null,
+            dragId: null,
+            studyTimer: { seconds: 1500, originalSeconds: 1500, isRunning: false, intervalId: null, totalFocusTime: 0 },
+            quiz: { 
+                active: false, 
+                questions: [], 
+                results: [], 
+                score: 0, 
+                index: 0, 
+                wrongAnswers: [],
+                timerMode: 'none', 
+                timerLimit: 0,
+                timeLeft: 0,
+                timerId: null,
+                lessonTitle: ''
+            },
+            flashcardSession: {
+                active: false,
+                list: [],
+                index: 0,
+                flipped: false
+            },
+            stickers: [],
+            stickerEditMode: false,
+            activeStickerId: null,
+            settingsOpen: false
+        };
+
+        /* --- UI HELPERS (MODALS & TOASTS) --- */
+        window.showToast = (msg) => {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('active');
+            setTimeout(() => t.classList.remove('active'), 2000);
+        };
+
+        window.closeCustomModal = () => {
+            document.getElementById('custom-modal').classList.remove('active');
+        };
+
+        window.showCustomModal = (title, bodyHtml, actionsHtml, icon='✨') => {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-body').innerHTML = bodyHtml;
+            document.getElementById('modal-actions').innerHTML = actionsHtml;
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('custom-modal').classList.add('active');
+        };
+
+        window.showAlert = (msg) => { window.showCustomModal("Hey there!", msg, `<button onclick="window.closeCustomModal()" class="bubbly-btn px-6">Okay</button>`); };
+        
+        window.showConfirm = (msg, onYes) => {
+            window.showCustomModal("Are you sure?", msg, `
+                <button onclick="window.closeCustomModal()" class="btn-secondary px-6">Cancel</button>
+                <button id="confirm-yes-btn" class="bubbly-btn px-6">Yes!</button>
+            `, '🤔');
+            document.getElementById('confirm-yes-btn').onclick = () => { window.closeCustomModal(); onYes(); };
+        };
+
+        window.showPrompt = (msg, defaultVal, onSubmit) => {
+            const inputHtml = `<input type="text" id="modal-prompt-input" value="${defaultVal || ''}" class="w-full text-center border-2 border-[var(--border-color)] rounded-xl p-3">`;
+            window.showCustomModal(msg, inputHtml, `
+                <button onclick="window.closeCustomModal()" class="btn-secondary px-6">Cancel</button>
+                <button id="prompt-submit-btn" class="bubbly-btn px-6">Save</button>
+            `, '✏️');
+            
+            const input = document.getElementById('modal-prompt-input');
+            input.focus();
+            input.onkeydown = (e) => { if(e.key === 'Enter') document.getElementById('prompt-submit-btn').click(); };
+            document.getElementById('prompt-submit-btn').onclick = () => { const val = input.value; if(val) { window.closeCustomModal(); onSubmit(val); } };
+        };
+
+        window.showInstructions = () => {
+            const helpHtml = `
+                <div class="text-left space-y-3">
+                    <p><b>📚 Dashboard:</b> Create subjects and lessons here. Click headers to rename.</p>
+                    <p><b>✨ Settings:</b> Customize theme, fonts, stickers, and enable auto-read!</p>
+                    <p><b>📅 Planner:</b> Click dates to add events. Set times to get Alarms ⏰! You can add details to tasks now.</p>
+                    <p><b>🧠 Quiz & Flashcards:</b> Test yourself. Score correctly on a 10+ question quiz to build your streak! 🔥</p>
+                    <p><b>🎨 Sticker Studio:</b> Enter Edit mode to layer, resize, and crop stickers!</p>
+                </div>
+            `;
+            window.showCustomModal("How to Use", helpHtml, `<button onclick="window.closeCustomModal()" class="bubbly-btn px-6">Got it!</button>`, '📖');
+        };
+
+        /* --- SPEECH SYNTHESIS --- */
+        window.speakText = (text) => {
+            if(!window.appState.ttsEnabled) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1;
+            window.speechSynthesis.speak(utterance);
+        };
+        
+        /* --- ALARMS & STREAKS --- */
+        window.checkStreak = () => {
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            let streak = window.appState.streak || { count: 0, lastDate: null };
+            
+            // Only update streak if we haven't already today
+            if (streak.lastDate !== today) {
+                if (streak.lastDate === yesterday) streak.count++; else streak.count = 1;
+                streak.lastDate = today;
+                window.showToast(`Daily Streak Increased! 🔥 ${streak.count}`);
+                // Play streak sound
+                try {
+                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+                    audio.volume = 0.5;
+                    audio.play().catch(err=>{});
+                } catch(err){}
+            }
+            window.appState.streak = streak;
+            document.getElementById('streak-counter').innerText = `🔥 ${streak.count}`;
+            window.saveData();
+        };
+
+        window.initStreakDisplay = () => {
+            const streak = window.appState.streak || { count: 0 };
+            document.getElementById('streak-counter').innerText = `🔥 ${streak.count}`;
+        };
+
+        window.checkAlarms = () => {
+            const now = new Date();
+            (window.appState.planner.events || []).forEach(e => {
+                if (!e.date || !e.time) return;
+                const eventDate = new Date(`${e.date}T${e.time}`);
+                if (isNaN(eventDate.getTime())) return;
+
+                let triggerTime = new Date(eventDate);
+                const offset = e.alarmOffset || 'at_time'; 
+                
+                if (offset === '5_min') triggerTime.setMinutes(triggerTime.getMinutes() - 5);
+                else if (offset === '15_min') triggerTime.setMinutes(triggerTime.getMinutes() - 15);
+                else if (offset === '1_hour') triggerTime.setHours(triggerTime.getHours() - 1);
+                else if (offset === '1_day') triggerTime.setDate(triggerTime.getDate() - 1);
+                
+                const isSameDate = now.toDateString() === triggerTime.toDateString();
+                const isSameTime = now.getHours() === triggerTime.getHours() && now.getMinutes() === triggerTime.getMinutes();
+                
+                if (isSameDate && isSameTime) {
+                     window.showCustomModal("⏰ Reminder!", `<p class="text-lg font-bold">${e.title}</p><p class="opacity-60 text-xs">Happening: ${e.time}</p>`, `<button onclick="window.closeCustomModal()" class="bubbly-btn px-6">Dismiss</button>`, '🔔');
+                     try {
+                        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                        audio.volume = 0.5;
+                        audio.play().catch(err=>console.log("Audio autoplay blocked"));
+                     } catch(err){}
+                }
+            });
+        };
+
+        /* --- INITIALIZATION --- */
+        window.init = function() {
+            const saved = localStorage.getItem('hub_v9_safe');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    window.appState = { ...window.appState, ...parsed };
+                    
+                    // Fix missing fields
+                    if(!window.appState.userProfile) window.appState.userProfile = { name: 'Student', bio: 'Ready to learn! ✨', avatar: null };
+                    if(!window.appState.studyTimer.totalFocusTime) window.appState.studyTimer.totalFocusTime = 0;
+                    if(!window.appState.streak) window.appState.streak = { count: 0, lastDate: null };
+                    if(!window.appState.activeStickerId) window.appState.activeStickerId = null;
+
+                    if (!window.appState.planner.selectedDate) window.appState.planner.selectedDate = new Date().toISOString().split('T')[0];
+                    if (!window.appState.planner.viewDate) window.appState.planner.viewDate = new Date().toISOString().split('T')[0];
+
+                    if (!COLOR_PALETTES[window.appState.palette]) window.appState.palette = 'strawberry';
+                    
+                    window.appState.view = 'welcome'; 
+                    window.appState.studyTimer.isRunning = false;
+                } catch(e) { 
+                    console.error("Load error", e); 
+                    window.appState.view = 'welcome';
+                    window.appState.subjects = [];
+                }
+            }
+            if (!window.appState.planner.schedule) window.appState.planner.schedule = [];
+            
+            try { window.applyTheme(); } catch(e) { console.error("Theme Error", e); }
+            try { window.applyTypography(); } catch(e) { console.error("Type Error", e); }
+            try { window.renderMain(); } catch(e) { console.error("Render Error", e); window.setView('welcome'); } 
+            try { window.renderSidePanel(); } catch(e) { console.error("SidePanel Error", e); }
+            try { window.renderStickers(); } catch(e) { console.error("Sticker Error", e); }
+            
+            document.getElementById('tts-toggle').checked = window.appState.ttsEnabled;
+            window.updateTimerDisplay();
+            window.initStreakDisplay();
+            
+            // Focus Mode Keyboard Shortcut
+            document.addEventListener('keydown', (e) => {
+                if(e.key.toLowerCase() === 'f' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    window.toggleFocusMode();
+                }
+            });
+
+            // Start Alarm Interval
+            setInterval(window.checkAlarms, 60000); // Check every minute
+        };
+
+        window.saveData = function() {
+            try {
+                const stateToSave = { ...window.appState };
+                delete stateToSave.dragId;
+                delete stateToSave.clipboardEvent;
+                // Don't save transient UI states if not needed, but keep quiz progress
+                localStorage.setItem('hub_v9_safe', JSON.stringify(stateToSave));
+                if(window.appState.view !== 'dashboard' && window.appState.view !== 'welcome') window.renderSidePanel();
+            } catch (e) {
+                window.showAlert("⚠️ Storage Full! Please remove some photos or stickers.");
+            }
+        };
+
+        /* --- THEME & TYPOGRAPHY --- */
+        window.applyTheme = function() {
+            const p = COLOR_PALETTES[window.appState.palette || 'strawberry'];
+            let colors = {};
+
+            if (window.appState.theme === 'dark') {
+                document.body.className = 'dark-mode';
+                document.getElementById('settings-btn').innerText = '🌙';
+                document.getElementById('dark-level-controls').style.display = 'grid'; // Show levels
+
+                const baseDark = p.dark;
+                const level = window.appState.darkLevel || 'deep';
+
+                colors = { ...baseDark };
+
+                if (level === 'dim') {
+                    colors['--bg-main'] = '#18181b'; colors['--bg-card'] = '#27272a'; colors['--input-bg'] = '#27272a'; colors['--border-color'] = '#3f3f46';
+                } else if (level === 'oled') {
+                    colors['--bg-main'] = '#000000'; colors['--bg-card'] = '#121212'; colors['--input-bg'] = '#121212'; colors['--border-color'] = '#333333';
+                }
+
+            } else {
+                document.body.className = '';
+                document.getElementById('settings-btn').innerText = '☀️';
+                document.getElementById('dark-level-controls').style.display = 'none'; // Hide levels
+                colors = p.light;
+            }
+
+            for (const [key, value] of Object.entries(colors)) { document.documentElement.style.setProperty(key, value); }
+            
+            window.applyTypography(); 
+
+            // Background Emojis
+            const container = document.getElementById('bg-decoration');
+            const emojis = p.emojis;
+            container.innerHTML = '';
+            for(let i=0; i<12; i++) {
+                const el = document.createElement('div');
+                el.className = 'floating';
+                el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                el.style.left = Math.random() * 95 + '%';
+                el.style.top = Math.random() * 95 + '%';
+                el.style.animationDelay = Math.random() * 8 + 's';
+                el.style.fontSize = (Math.random() * 2 + 2) + 'rem';
+                container.appendChild(el);
+            }
+            
+            // Restore focus mode visual state if active
+            if(window.appState.focusMode) document.body.classList.add('focus-mode');
+            else document.body.classList.remove('focus-mode');
+        };
+
+        window.applyTypography = function() {
+            document.documentElement.className = window.appState.fontSize;
+            document.body.classList.remove('font-style-cute', 'font-style-clean', 'font-style-serif');
+            document.body.classList.add(`font-style-${window.appState.fontStyle}`);
+        };
+
+        window.toggleTheme = function() {
+            window.appState.theme = window.appState.theme === 'light' ? 'dark' : 'light';
+            window.saveData(); window.applyTheme(); 
+        };
+
+        window.setDarkLevel = (level) => {
+            window.appState.darkLevel = level;
+            window.saveData(); window.applyTheme();
+        };
+
+        window.setPalette = (pid) => {
+            window.appState.palette = pid;
+            window.saveData(); window.applyTheme();
+            window.renderMain(); // To update the avatar
+            window.showToast(`Theme changed to ${COLOR_PALETTES[pid].name}!`);
+        };
+
+        window.setFontSize = (size) => {
+            window.appState.fontSize = size;
+            window.saveData(); window.applyTypography();
+        };
+
+        window.setFontStyle = (style) => {
+            window.appState.fontStyle = style;
+            window.saveData(); window.applyTypography();
+        };
+
+        window.toggleTTS = (val) => {
+            window.appState.ttsEnabled = val;
+            window.saveData();
+            if(val) window.speakText("Auto read enabled");
+        };
+
+        /* --- FOCUS MODE --- */
+        window.toggleFocusMode = () => {
+            window.appState.focusMode = !window.appState.focusMode;
+            if(window.appState.focusMode) {
+                document.body.classList.add('focus-mode');
+                window.showToast("Focus Mode On 🧘");
+            } else {
+                document.body.classList.remove('focus-mode');
+                window.showToast("Welcome Back! ✨");
+            }
+        };
+
+        /* --- SETTINGS MENU --- */
+        window.toggleSettings = () => {
+            const menu = document.getElementById('settings-menu');
+            window.appState.settingsOpen = !window.appState.settingsOpen;
+            if(window.appState.settingsOpen) menu.classList.remove('hidden');
+            else menu.classList.add('hidden');
+        };
+        
+        /* --- MUSIC PLAYER --- */
+        window.loadMusicUrl = () => {
+            const url = document.getElementById('music-url-input').value;
+            const container = document.getElementById('music-player-container');
+            const target = document.getElementById('yt-player-target');
+            const audio = document.getElementById('local-audio-player');
+            
+            target.innerHTML = '';
+            audio.classList.add('hidden');
+            audio.pause();
+            
+            if(url.includes('youtube.com') || url.includes('youtu.be')) {
+                let videoId = null;
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = url.match(regExp);
+                if (match && match[2].length == 11) { videoId = match[2]; }
+
+                if (videoId) {
+                    target.innerHTML = `<iframe width="100%" height="150" src="https://www.youtube-nocookie.com/embed/${videoId}?origin=${window.location.origin}" frameborder="0" referrerpolicy="no-referrer" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                } else { window.showAlert("Invalid YouTube URL."); }
+            } 
+            else if (url.includes('spotify.com')) {
+                 let embedUrl = url;
+                 if (!url.includes('/embed/')) { embedUrl = url.replace('open.spotify.com/', 'open.spotify.com/embed/'); }
+                 embedUrl = embedUrl.split('?')[0]; 
+                 target.innerHTML = `<iframe style="border-radius:12px" src="${embedUrl}" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+            }
+            else { window.showAlert("Please use a valid YouTube or Spotify link."); }
+        };
+
+        window.handleLocalMusic = (e) => {
+            const f = e.target.files[0];
+            if(!f) return;
+            const url = URL.createObjectURL(f);
+            const target = document.getElementById('yt-player-target');
+            const audio = document.getElementById('local-audio-player');
+            target.innerHTML = '';
+            audio.src = url;
+            audio.classList.remove('hidden');
+            document.querySelector('#music-player-container span').style.display = 'none';
+        };
+        
+        window.loadPreset = (type) => {
+            const input = document.getElementById('music-url-input');
+            if(type === 'lofi') input.value = 'https://www.youtube.com/watch?v=jfKfPfyJRdk';
+            if(type === 'piano') input.value = 'https://www.youtube.com/watch?v=s5WjR2rV8kM';
+            if(type === 'rain') input.value = 'https://www.youtube.com/watch?v=mPZkdNFkNps';
+            window.loadMusicUrl();
+        };
+
+        /* --- STICKER SYSTEM (ADVANCED) --- */
+        window.addSticker = (e) => {
+            const f = e.target.files[0];
+            if(!f) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                // Initialize new sticker with defaults
+                window.appState.stickers.push({
+                    id: Date.now().toString(), 
+                    src: ev.target.result, 
+                    x: 50, y: 50, 
+                    z: 50, // Z-index
+                    scale: 1, 
+                    rotation: 0, 
+                    crop: false
+                });
+                window.saveData(); window.renderStickers(); window.toggleSettings(); window.showToast("Sticker Added! ✨");
+            };
+            reader.readAsDataURL(f);
+        };
+
+        window.toggleStickerEdit = () => {
+            window.appState.stickerEditMode = !window.appState.stickerEditMode;
+            // Clear selection when exiting
+            if (!window.appState.stickerEditMode) window.appState.activeStickerId = null;
+            
+            document.getElementById('edit-sticker-btn').innerText = window.appState.stickerEditMode ? '🔒 Lock Stickers' : '🔓 Edit Stickers';
+            window.renderStickers(); window.toggleSettings(); 
+            window.showToast(window.appState.stickerEditMode ? "Edit Mode On ✏️" : "Stickers Locked 🔒");
+        };
+
+        window.selectSticker = (e, id) => {
+            if(!window.appState.stickerEditMode) return;
+            e.stopPropagation();
+            window.appState.activeStickerId = id;
+            window.renderStickers();
+        };
+
+        window.deleteSticker = (id) => {
+            window.appState.stickers = window.appState.stickers.filter(s => s.id !== id);
+            if(window.appState.activeStickerId === id) window.appState.activeStickerId = null;
+            window.saveData(); window.renderStickers();
+        };
+
+        // Advanced Sticker Controls
+        window.modifySticker = (action, val) => {
+            const s = window.appState.stickers.find(st => st.id === window.appState.activeStickerId);
+            if(!s) return;
+
+            if(action === 'z') s.z += val;
+            if(action === 'scale') s.scale = Math.max(0.2, s.scale + val);
+            if(action === 'rotate') s.rotation += val;
+            if(action === 'crop') s.crop = !s.crop;
+            
+            window.saveData(); window.renderStickers();
+        };
+
+        window.renderStickers = () => {
+            const layer = document.getElementById('sticker-layer');
+            const controls = document.getElementById('sticker-controls');
+            layer.innerHTML = '';
+            
+            // Hide controls if no selection or not editing
+            if(!window.appState.stickerEditMode || !window.appState.activeStickerId) {
+                controls.classList.add('hidden');
+            } else {
+                controls.classList.remove('hidden');
+                // Render Control Buttons
+                controls.innerHTML = `
+                    <button onclick="window.modifySticker('z', 1)" class="btn-secondary px-2 text-xs" title="Bring Forward">⬆</button>
+                    <button onclick="window.modifySticker('z', -1)" class="btn-secondary px-2 text-xs" title="Send Back">⬇</button>
+                    <div class="w-px bg-gray-300 mx-1"></div>
+                    <button onclick="window.modifySticker('scale', 0.1)" class="btn-secondary px-2 text-xs" title="Bigger">➕</button>
+                    <button onclick="window.modifySticker('scale', -0.1)" class="btn-secondary px-2 text-xs" title="Smaller">➖</button>
+                    <div class="w-px bg-gray-300 mx-1"></div>
+                    <button onclick="window.modifySticker('rotate', 15)" class="btn-secondary px-2 text-xs" title="Rotate Right">↻</button>
+                    <button onclick="window.modifySticker('rotate', -15)" class="btn-secondary px-2 text-xs" title="Rotate Left">↺</button>
+                    <div class="w-px bg-gray-300 mx-1"></div>
+                    <button onclick="window.modifySticker('crop', 0)" class="btn-secondary px-2 text-xs" title="Toggle Circle Crop">✂️</button>
+                `;
+            }
+
+            // Click BG to deselect
+            layer.onclick = () => { if(window.appState.stickerEditMode) { window.appState.activeStickerId = null; window.renderStickers(); }};
+
+            window.appState.stickers.forEach(s => {
+                const img = document.createElement('div');
+                const isSelected = window.appState.activeStickerId === s.id;
+                
+                img.className = `sticker-img ${window.appState.stickerEditMode ? 'editable' : ''} ${isSelected ? 'selected' : ''}`;
+                img.style.left = s.x + '%';
+                img.style.top = s.y + '%';
+                img.style.backgroundImage = `url(${s.src})`;
+                img.style.backgroundSize = 'cover';
+                img.style.backgroundPosition = 'center';
+                img.style.width = '100px';
+                img.style.height = '100px';
+                img.style.zIndex = s.z || 50;
+                
+                // Transforms
+                const rotate = s.rotation || 0;
+                const scale = s.scale || 1;
+                img.style.transform = `rotate(${rotate}deg) scale(${scale})`;
+                
+                // Crop
+                if(s.crop) img.style.borderRadius = '50%';
+                
+                if(window.appState.stickerEditMode) {
+                    img.onmousedown = (e) => { window.selectSticker(e, s.id); window.startDragSticker(e, s.id); };
+                    img.ontouchstart = (e) => { window.selectSticker(e, s.id); window.startDragSticker(e, s.id); };
+                    
+                    if(isSelected) {
+                        const delBtn = document.createElement('div');
+                        delBtn.className = 'absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer shadow-md text-xs font-bold z-[70]';
+                        delBtn.innerText = '✕';
+                        delBtn.onmousedown = (e) => { e.stopPropagation(); window.deleteSticker(s.id); }; // Use onmousedown for immediate firing
+                        // Undo transform for the delete button so it stays upright/sized relative to view
+                        delBtn.style.transform = `scale(${1/scale})`; 
+                        img.appendChild(delBtn);
+                    }
+                }
+                layer.appendChild(img);
+            });
+        };
+
+        let isDraggingSticker = false;
+        window.startDragSticker = (e, id) => {
+            if(!window.appState.stickerEditMode) return;
+            e.preventDefault();
+            window.appState.activeStickerId = id; // Ensure selection on drag start
+            isDraggingSticker = true;
+            document.addEventListener('mousemove', window.moveSticker);
+            document.addEventListener('mouseup', window.stopDragSticker);
+            document.addEventListener('touchmove', window.moveSticker, {passive: false});
+            document.addEventListener('touchend', window.stopDragSticker);
+        };
+
+        window.moveSticker = (e) => {
+            if(!isDraggingSticker || !window.appState.activeStickerId) return;
+            e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const xPct = (clientX / window.innerWidth) * 100;
+            const yPct = (clientY / window.innerHeight) * 100;
+            const s = window.appState.stickers.find(st => st.id === window.appState.activeStickerId);
+            if(s) { s.x = xPct; s.y = yPct; window.renderStickers(); }
+        };
+
+        window.stopDragSticker = () => {
+            if(window.appState.activeStickerId) window.saveData();
+            isDraggingSticker = false;
+            document.removeEventListener('mousemove', window.moveSticker);
+            document.removeEventListener('mouseup', window.stopDragSticker);
+            document.removeEventListener('touchmove', window.moveSticker);
+            document.removeEventListener('touchend', window.stopDragSticker);
+        };
+
+
+        /* --- ROUTER & VIEWS --- */
+        window.setView = function(view, id = null, lessonId = null) {
+            window.appState.view = view;
+            if (id) window.appState.currentSubject = window.appState.subjects.find(s => s.id === id);
+            if (lessonId && window.appState.currentSubject) {
+                window.appState.currentLesson = window.appState.currentSubject.lessons.find(l => l.id === lessonId);
+            }
+            window.renderMain();
+            window.renderSidePanel();
+        };
+
+        /* --- VISUAL EDITOR --- */
+        window.toggleEditorMode = () => {
+            window.appState.editorMode = window.appState.editorMode === 'visual' ? 'json' : 'visual';
+            window.renderMain();
+        };
+
+        window.addQuestion = () => {
+            if (!window.appState.currentLesson.questions) window.appState.currentLesson.questions = [];
+            // Init with mastery 0
+            window.appState.currentLesson.questions.push({ type: 'id', question: '', answer: '', hint: '', explanation: '', options:[], mastery: 0 });
+            window.saveData(); window.renderMain();
+        };
+
+        window.deleteQuestion = (index) => {
+            if (confirm("Delete this question?")) {
+                window.appState.currentLesson.questions.splice(index, 1);
+                window.saveData(); window.renderMain();
+            }
+        };
+
+        window.updateQuestion = (index, field, value) => {
+            window.appState.currentLesson.questions[index][field] = value;
+            window.saveData(); 
+        };
+
+        // Fix for multiple choice options array
+        window.updateMcOption = (qIndex, optIndex, value) => {
+             if(!window.appState.currentLesson.questions[qIndex].options) window.appState.currentLesson.questions[qIndex].options = [];
+             window.appState.currentLesson.questions[qIndex].options[optIndex] = value;
+             window.saveData();
+        };
+        
+        window.addMcOption = (qIndex) => {
+             if(!window.appState.currentLesson.questions[qIndex].options) window.appState.currentLesson.questions[qIndex].options = [];
+             window.appState.currentLesson.questions[qIndex].options.push("");
+             window.saveData(); window.renderMain();
+        };
+
+        window.removeMcOption = (qIndex, optIndex) => {
+             window.appState.currentLesson.questions[qIndex].options.splice(optIndex, 1);
+             window.saveData(); window.renderMain();
+        };
+
+        window.updateQuestionImage = (index, event) => {
+            const f = event.target.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                window.appState.currentLesson.questions[index].image = ev.target.result;
+                window.saveData(); window.renderMain(); window.showToast("Image Attached! 📸");
+            };
+            reader.readAsDataURL(f);
+        };
+
+        /* --- PROFILE FUNCTIONS --- */
+        window.handleAvatarUpload = (e) => {
+            const f = e.target.files[0];
+            if(!f) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                window.appState.userProfile.avatar = ev.target.result;
+                window.saveData(); window.renderMain();
+            };
+            reader.readAsDataURL(f);
+        };
+
+        window.editProfileName = () => {
+            window.showPrompt("Enter your Name:", window.appState.userProfile.name, (n) => {
+                if(n) { window.appState.userProfile.name = n; window.saveData(); window.renderMain(); }
+            });
+        };
+
+        window.editProfileBio = () => {
+            window.showPrompt("Enter your Bio:", window.appState.userProfile.bio, (n) => {
+                if(n) { window.appState.userProfile.bio = n; window.saveData(); window.renderMain(); }
+            });
+        };
+
+        window.renderMain = function() {
+            const container = document.getElementById('main-card');
+            const view = window.appState.view;
+            const palette = COLOR_PALETTES[window.appState.palette || 'strawberry'];
+            const themeEmojis = palette.emojis || THEMES['light'].emojis;
+            const themeAvatar = palette.cat || "🐱";
+
+            // Welcome Screen
+            if (view === 'welcome') {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center p-10 text-center animate-in fade-in zoom-in duration-500 bg-[var(--bg-card)] rounded-[2rem] overflow-hidden">
+                        <div class="flex-1 flex flex-col items-center justify-center w-full">
+                            <div class="text-9xl mb-6 cat-avatar animate-bounce" style="animation-duration: 2s;">${themeAvatar}</div>
+                            <h1 class="text-6xl font-black mb-2 text-[var(--accent-color)] tracking-tight">Hello!</h1>
+                            <p class="text-xl font-bold opacity-60 mb-8 max-w-md leading-relaxed mx-auto">Your aesthetic study space is ready.<br>Let's learn something new today! ✨</p>
+                        </div>
+                        <div class="pb-10 w-full">
+                            <button onclick="window.setView('dashboard')" class="bubbly-btn px-12 py-5 text-2xl shadow-xl hover:scale-105 hover:rotate-2 transition w-full max-w-sm">Enter Study Hub ➔</button>
+                        </div>
+                    </div>
+                `;
+            }
+            // Dashboard
+            else if (view === 'dashboard') {
+                const subjs = (window.appState.subjects || []).map((s, i) => `
+                    <div onclick="window.setView('subject', '${s.id}')" class="group relative bg-[var(--bg-secondary)] p-6 rounded-[2rem] border-2 border-[var(--border-color)] hover:border-[var(--accent-color)] cursor-pointer transition-all hover:-translate-y-2 hover:shadow-soft">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="text-4xl transform group-hover:scale-110 transition bg-white dark:bg-black/10 p-2 rounded-2xl shadow-sm">${themeEmojis[i % themeEmojis.length]}</div>
+                            <div class="flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="event.stopPropagation(); window.editSubject('${s.id}')" class="text-[var(--accent-color)] bg-white dark:bg-black/20 rounded-full w-8 h-8 flex items-center justify-center hover:scale-110 shadow-sm" title="Rename">✎</button>
+                                <button onclick="event.stopPropagation(); window.deleteSubject('${s.id}')" class="text-red-400 bg-white dark:bg-black/20 rounded-full w-8 h-8 flex items-center justify-center hover:scale-110 shadow-sm">✕</button>
+                            </div>
+                        </div>
+                        <h3 class="font-bold text-lg truncate mb-2 text-[var(--text-primary)]">${s.title}</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold uppercase bg-[var(--bg-card)] px-3 py-1 rounded-full border border-[var(--border-color)] text-[var(--accent-color)]">${s.lessons.length} Lessons</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                let quizProgressHtml = '';
+                if(window.appState.quiz.active) {
+                    const qProgress = Math.round((window.appState.quiz.index / window.appState.quiz.questions.length) * 100);
+                    quizProgressHtml = `
+                        <div class="relative z-10 mt-6 glass-panel p-5 rounded-3xl flex flex-col md:flex-row gap-4 items-center justify-between shadow-lg border-l-8 border-[var(--accent-color)] animate-pulse">
+                            <div class="flex-1 w-full">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-bold text-xs uppercase tracking-widest text-[var(--accent-color)]">✨ Quiz in Progress</h4>
+                                    <span class="text-[10px] font-bold opacity-60">${qProgress}% Complete</span>
+                                </div>
+                                <h3 class="font-bold text-lg mb-2">${window.appState.quiz.lessonTitle}</h3>
+                                <div class="w-full bg-black/5 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-[var(--accent-color)] h-full rounded-full transition-all duration-500" style="width: ${qProgress}%"></div>
+                                </div>
+                            </div>
+                            <button onclick="window.resumeQuiz()" class="bubbly-btn whitespace-nowrap shadow-lg hover:scale-105 transition">Resume ▶</button>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = `
+                    <div class="p-10 text-white relative overflow-hidden flex-shrink-0" style="background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));">
+                        <div class="relative z-10 flex justify-between items-center">
+                            <div>
+                                <h1 class="text-4xl md:text-5xl font-black uppercase tracking-tight drop-shadow-sm font-display editable-header" onclick="window.editTitle()" title="Click to rename">${window.appState.title || 'Study Hub'}</h1>
+                                <p class="text-white/90 text-xs md:text-sm font-bold italic mt-2 tracking-wide editable-header" onclick="window.editSubtitle()" title="Click to edit">${window.appState.subtitle || 'Your aesthetic learning space ☁️'}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="window.setView('planner')" class="bg-white/20 px-6 py-3 rounded-full font-bold text-xs uppercase hover:bg-white/30 transition backdrop-blur-md border border-white/20">📅 Planner</button>
+                            </div>
+                        </div>
+                        ${quizProgressHtml}
+                        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="absolute top-10 left-1/3 w-20 h-20 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                    </div>
+                    
+                    <div class="p-4 md:p-8 flex-1 overflow-y-auto custom-scroll">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                            ${subjs.length ? subjs : `<div class="col-span-2 text-center py-20 opacity-40 font-bold flex flex-col items-center"><span class="text-7xl mb-4 grayscale opacity-50">☁️</span><p>It's quiet here...</p><p class="text-sm font-normal">Create a subject to start!</p></div>`}
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 border-t-2 border-[var(--border-color)] flex gap-3 bg-[var(--bg-card)] items-center">
+                        <input type="text" id="new-subj" placeholder="Name your new subject..." class="flex-1 p-4 shadow-inner bg-[var(--bg-secondary)] border-2 border-transparent focus:bg-white">
+                        <button onclick="window.addSubject()" class="bubbly-btn px-8 shadow-lg">CREATE</button>
+                    </div>`;
+            }
+            // Subject View
+            else if (view === 'subject') {
+                const s = window.appState.currentSubject;
+                if(!s) { window.setView('dashboard'); return; }
+                container.innerHTML = `
+                    <div class="bg-[var(--bg-secondary)] p-6 flex justify-between items-center border-b-2 border-[var(--border-color)]">
+                        <button onclick="window.setView('dashboard')" class="text-xs font-black uppercase text-[var(--text-secondary)] hover:text-[var(--accent-color)] flex items-center gap-1 transition">◀ Back to Hub</button>
+                        <h2 class="font-bold text-2xl truncate max-w-[200px] md:max-w-[300px] cursor-pointer hover:opacity-70 flex items-center gap-2 text-[var(--accent-color)]" onclick="window.editSubject('${s.id}')" title="Rename Subject">${s.title} <span class="text-xs opacity-50">✎</span></h2>
+                        <button onclick="window.addLesson()" class="btn-secondary px-5 py-2 text-xs shadow-sm">+ New Lesson</button>
+                    </div>
+                    <div class="p-4 md:p-8 flex-1 overflow-y-auto custom-scroll">
+                        <div class="flex flex-col gap-5">
+                            ${s.lessons.map(l => `
+                                <div class="bg-[var(--bg-card)] p-5 rounded-[2rem] border-2 border-[var(--border-color)] flex flex-col sm:flex-row justify-between items-center shadow-sm hover:shadow-soft transition group">
+                                    <div class="mb-3 sm:mb-0 text-center sm:text-left w-full sm:w-auto">
+                                        <h3 class="font-bold text-lg cursor-pointer hover:text-[var(--accent-color)] flex items-center justify-center sm:justify-start gap-2" onclick="window.editLesson('${l.id}')" title="Rename Lesson">${l.title} <span class="text-[10px] opacity-0 group-hover:opacity-50">✎</span></h3>
+                                        <span class="text-[10px] font-bold uppercase text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-3 py-1 rounded-full mt-1 inline-block">${l.questions.length} Questions</span>
+                                    </div>
+                                    <div class="flex gap-2 w-full sm:w-auto justify-center">
+                                        <button onclick="window.setView('editor', '${s.id}', '${l.id}')" class="btn-secondary px-4 py-2 text-[10px]">Questions</button>
+                                        <button onclick="window.openQuizSetup('${l.id}')" class="bubbly-btn px-5 py-2 text-xs shadow-md">Play ▶</button>
+                                        <button onclick="window.deleteLesson('${l.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-100 flex items-center justify-center transition ml-2" title="Delete Lesson">✕</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            ${s.lessons.length === 0 ? '<div class="text-center opacity-40 italic py-10">No lessons yet.<br>Click "+ New Lesson" to begin.</div>' : ''}
+                        </div>
+                        ${s.lessons.length > 0 ? `<div class="mt-10 pt-8 border-t-2 border-[var(--border-color)] text-center"><h4 class="font-bold text-xs uppercase text-[var(--accent-color)] tracking-widest mb-4 opacity-70">Mastery Mode</h4><button onclick="window.openQuizSetup('all')" class="bubbly-btn w-full py-4 text-lg shadow-xl hover:scale-[1.02] transition">Quiz All Lessons 🚀</button></div>` : ''}
+                    </div>`;
+            }
+            else if (view === 'quiz') {
+                const q = window.appState.quiz.questions[window.appState.quiz.index];
+                if(!q) { window.setView('results'); return; } 
+                const total = window.appState.quiz.questions.length;
+                
+                // Auto Read
+                if(window.appState.ttsEnabled) {
+                    setTimeout(() => window.speakText(q.question), 500);
+                }
+
+                // Render Input
+                let inputHtml = '';
+                if (q.type === 'id') {
+                    inputHtml = `<input type="text" id="id-input" placeholder="Type your answer..." class="w-full p-5 text-center text-xl font-bold mb-4 shadow-sm border-4 border-[var(--border-color)] focus:border-[var(--accent-color)] rounded-[2rem]" onkeydown="if(event.key==='Enter') window.handleAnswer(this.value)">
+                     <button onclick="window.handleAnswer(document.getElementById('id-input').value)" class="bubbly-btn w-full py-4 uppercase text-lg shadow-lg">Submit Answer</button>`;
+                } else {
+                    // MC Options
+                    inputHtml = `<div class="w-full max-w-md space-y-3">
+                        ${(q.options || []).map(opt => `
+                            <button onclick="window.handleAnswer('${opt.replace(/'/g, "\\'")}')" class="quiz-opt w-full p-5 border-3 border-[var(--border-color)] rounded-[1.5rem] font-bold text-md hover:bg-[var(--bg-secondary)] hover:border-[var(--accent-color)] transition-all text-left bg-[var(--bg-card)] shadow-sm">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>`;
+                }
+
+                // Navigator HTML
+                const navHtml = window.appState.quiz.questions.map((_, i) => {
+                    const status = window.appState.quiz.results[i]; // pending, correct, wrong, skipped
+                    let cls = '';
+                    if (i === window.appState.quiz.index) cls = 'active';
+                    else if (status === 'correct') cls = 'correct';
+                    else if (status === 'wrong') cls = 'wrong';
+                    else if (status === 'skipped') cls = 'skipped';
+                    return `<div class="quiz-nav-dot ${cls}" onclick="window.jumpToQuestion(${i})">${i + 1}</div>`;
+                }).join('');
+
+                container.innerHTML = `
+                    <div class="absolute top-4 left-4 z-20">
+                        <div id="cat-avatar" class="cat-avatar drop-shadow-md" onclick="window.askAiHint()" title="Click for Hint">${themeAvatar}</div>
+                        <div id="cat-hint-bubble" class="cat-speech hidden"></div>
+                    </div>
+                    <div class="absolute top-6 right-6 z-20 text-xs font-black uppercase bg-[var(--bg-card)] px-4 py-2 rounded-full border-2 border-[var(--border-color)] shadow-sm flex items-center gap-2" id="quiz-timer-display">${window.appState.quiz.timerMode !== 'none' ? '⏱️' : '❤️'}</div>
+                    
+                    <div class="flex-1 flex flex-col p-8 items-center justify-center text-center overflow-y-auto custom-scroll relative pb-24">
+                        <span class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-6 bg-[var(--bg-secondary)] px-4 py-1 rounded-full">Question ${window.appState.quiz.index + 1} / ${total}</span>
+                        
+                        ${q.image ? `<img src="${q.image}" class="max-w-full h-48 md:h-64 object-contain mb-6 rounded-2xl shadow-sm border-2 border-[var(--border-color)] bg-white/50 animate-in zoom-in duration-300">` : ''}
+                        
+                        <h2 class="text-2xl md:text-3xl font-black mb-6 leading-snug max-w-2xl text-[var(--text-primary)] drop-shadow-sm">${q.question}</h2>
+                        <button onclick="window.askAiHint()" class="mb-8 btn-hint shadow-sm">💡 Get Hint</button>
+                        ${inputHtml}
+                        <div id="quiz-feedback" class="mt-8 hidden p-6 rounded-[2rem] text-md font-bold w-full max-w-md shadow-soft border-4 animate-[pop_0.3s_ease-out]"></div>
+                        
+                        <div class="flex gap-4 mt-8 w-full max-w-md justify-center">
+                            <button onclick="window.prevQuestion()" class="btn-secondary px-6 py-4 text-lg shadow-sm">◀ Prev</button>
+                            <button id="next-btn" onclick="window.nextQuestion()" class="bubbly-btn px-10 py-4 text-xl shadow-xl hover:scale-105 flex-1">Next ➔</button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 border-t border-[var(--border-color)] bg-[var(--bg-secondary)] flex flex-col items-center gap-2">
+                         <div class="flex gap-2 w-full overflow-x-auto justify-center px-4 custom-scroll pb-2">${navHtml}</div>
+                         <button onclick="window.saveAndExitQuiz()" class="text-[10px] text-[var(--text-secondary)] font-bold hover:text-[var(--accent-color)] border border-[var(--border-color)] px-4 py-1 rounded-full bg-[var(--bg-card)]">Save & Exit</button>
+                    </div>`;
+            }
+            else if (view === 'results') {
+                const score = window.appState.quiz.score;
+                const total = window.appState.quiz.questions.length;
+                const pct = Math.round((score/total)*100);
+                const wrongs = window.appState.quiz.wrongAnswers;
+                const hasWrongs = window.appState.quiz.results.includes('wrong');
+                
+                container.innerHTML = `<div class="flex-1 overflow-y-auto custom-scroll p-8 flex flex-col items-center justify-center"><div class="text-9xl mb-6 animate-[pop_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)] filter drop-shadow-lg">${pct > 70 ? '😻' : '😿'}</div><h2 class="text-6xl font-black text-[var(--accent-color)] mb-2 tracking-tighter">${pct}%</h2><p class="font-bold opacity-60 mb-10 uppercase tracking-widest text-sm bg-[var(--bg-secondary)] px-4 py-1 rounded-full">Score: ${score} / ${total}</p>
+                <div class="flex gap-4 mb-12">
+                    <button onclick="window.finishQuiz()" class="btn-secondary px-8 py-4 text-sm shadow-sm">Finish</button>
+                    <button onclick="window.openQuizSetup(window.appState.tempLessonId || 'all')" class="bubbly-btn px-8 py-4 text-sm shadow-lg">Retry All</button>
+                    ${hasWrongs ? `<button onclick="window.startMasteryQuiz()" class="bubbly-btn px-8 py-4 text-sm shadow-lg bg-red-400">Mastery Retry 🧠</button>` : ''}
+                </div>
+                ${wrongs.length > 0 ? `<div class="w-full max-w-lg"><h3 class="font-black text-center uppercase tracking-widest text-[var(--accent-color)] mb-6 border-b-2 border-[var(--border-color)] pb-4 text-sm opacity-70">Review Mistakes</h3><div class="space-y-4">${wrongs.map(w => `<div class="bg-[var(--bg-secondary)] p-5 rounded-[2rem] border-2 border-red-100"><div class="text-xs font-bold mb-3 opacity-70">${w.q}</div><div class="flex flex-col gap-1 text-xs font-bold"><span class="text-red-400 bg-red-50 p-2 rounded-xl">❌ You: ${w.u}</span><span class="text-green-500 bg-green-50 p-2 rounded-xl">✅ Ans: ${w.a}</span></div>
+                ${w.e ? `<div class="mt-2 text-xs opacity-60 italic bg-white p-2 rounded-lg">💡 ${w.e}</div>` : ''}
+                </div>`).join('')}</div></div>` : '<div class="text-green-500 font-bold bg-green-50 px-6 py-4 rounded-2xl border-2 border-green-100">✨ Perfect Score! You\'re amazing! ✨</div>'}</div>`;
+            }
+            else if (view === 'editor') {
+                 const l = window.appState.currentLesson;
+                 if(!l) { window.setView('dashboard'); return; }
+                 
+                 const modeToggleHtml = window.appState.editorMode === 'visual' 
+                    ? `<button onclick="window.toggleEditorMode()" class="btn-secondary px-3 text-xs">Switch to JSON 🤓</button>`
+                    : `<button onclick="window.toggleEditorMode()" class="bubbly-btn px-3 text-xs shadow-sm">Switch to Visual 🎨</button>`;
+
+                 container.innerHTML = `
+                 <div class="bg-[var(--bg-secondary)] p-4 flex justify-between items-center border-b border-[var(--border-color)]">
+                    <div>
+                        <span class="font-bold text-[var(--accent-color)] block">Editor: ${l.title}</span>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        ${modeToggleHtml}
+                        <button onclick="window.setView('subject', '${window.appState.currentSubject.id}')" class="text-xs font-bold text-red-400 px-3">Exit</button>
+                    </div>
+                 </div>`;
+
+                 if (window.appState.editorMode === 'visual') {
+                    // Visual Editor
+                    const qList = (l.questions || []).map((q, i) => {
+                        let answerInput = '';
+                        if (q.type === 'id') {
+                            answerInput = `<input type="text" placeholder="Correct Answer" value="${q.answer.replace(/"/g, '&quot;')}" oninput="window.updateQuestion(${i}, 'answer', this.value)" class="w-full border-[var(--accent-color)]">`;
+                        } else {
+                            // Multiple Choice Editor
+                            const opts = q.options || [];
+                            answerInput = `
+                                <div class="bg-white/50 p-3 rounded-xl border border-[var(--border-color)]">
+                                    <span class="text-[10px] font-bold uppercase opacity-50 block mb-2">Options (Click circle to set correct)</span>
+                                    ${opts.map((opt, optIdx) => `
+                                        <div class="flex gap-2 mb-2 items-center">
+                                            <div onclick="window.updateQuestion(${i}, 'answer', '${opt.replace(/'/g, "\\'")}')" class="w-4 h-4 rounded-full border-2 cursor-pointer ${q.answer === opt ? 'bg-[var(--accent-color)] border-[var(--accent-color)]' : 'border-gray-300'}"></div>
+                                            <input type="text" value="${opt.replace(/"/g, '&quot;')}" oninput="window.updateMcOption(${i}, ${optIdx}, this.value)" class="flex-1 text-xs p-1 h-8 rounded-lg" placeholder="Option Text">
+                                            <button onclick="window.removeMcOption(${i}, ${optIdx})" class="text-red-400 text-xs">×</button>
+                                        </div>
+                                    `).join('')}
+                                    <button onclick="window.addMcOption(${i})" class="text-[10px] bg-[var(--bg-secondary)] px-2 py-1 rounded border border-[var(--border-color)]">+ Add Option</button>
+                                </div>
+                            `;
+                        }
+
+                        return `
+                        <div class="bg-[var(--bg-secondary)] p-4 rounded-2xl border-2 border-[var(--border-color)] relative group">
+                            <button onclick="window.deleteQuestion(${i})" class="absolute top-2 right-2 text-red-400 font-bold opacity-50 hover:opacity-100 hover:scale-110 p-2">✕</button>
+                            
+                            <div class="space-y-3">
+                                <div class="flex gap-2">
+                                    <select onchange="window.updateQuestion(${i}, 'type', this.value); window.renderMain()" class="w-24 text-xs font-bold uppercase">
+                                        <option value="id" ${q.type === 'id' ? 'selected' : ''}>Term</option>
+                                        <option value="mc" ${q.type === 'mc' ? 'selected' : ''}>Choice</option>
+                                    </select>
+                                    <input type="text" placeholder="Question Text" value="${q.question.replace(/"/g, '&quot;')}" oninput="window.updateQuestion(${i}, 'question', this.value)" class="flex-1 font-bold">
+                                </div>
+                                
+                                ${answerInput}
+                                
+                                <div class="flex gap-2">
+                                    <input type="text" placeholder="Hint (Optional)" value="${q.hint || ''}" oninput="window.updateQuestion(${i}, 'hint', this.value)" class="flex-1 text-xs">
+                                    <input type="text" placeholder="Explanation (Optional)" value="${q.explanation || ''}" oninput="window.updateQuestion(${i}, 'explanation', this.value)" class="flex-1 text-xs">
+                                </div>
+
+                                <div class="flex items-center gap-3 mt-2 border-t border-[var(--border-color)] pt-3">
+                                    ${q.image ? `<img src="${q.image}" class="h-12 w-12 object-cover rounded-lg border border-[var(--border-color)] bg-white">` : '<div class="h-12 w-12 rounded-lg bg-black/5 flex items-center justify-center text-xs opacity-30">No Img</div>'}
+                                    <button onclick="document.getElementById('q-img-${i}').click()" class="btn-secondary text-[10px] px-3 py-1">📸 Add Image</button>
+                                    <input type="file" id="q-img-${i}" class="hidden" accept="image/*" onchange="window.updateQuestionImage(${i}, event)">
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('');
+
+                    container.innerHTML += `
+                        <div class="p-4 flex-1 overflow-y-auto custom-scroll space-y-4">
+                            ${qList.length ? qList : '<div class="text-center opacity-40 py-10 font-bold italic">No questions yet! Click below to add one.</div>'}
+                            <button onclick="window.addQuestion()" class="w-full border-2 border-dashed border-[var(--accent-color)] text-[var(--accent-color)] font-bold py-3 rounded-2xl hover:bg-[var(--bg-secondary)] transition">+ Add New Question</button>
+                        </div>
+                    `;
+                 } else {
+                    // JSON Editor (Legacy)
+                    container.innerHTML += `
+                    <div class="p-4 bg-[var(--bg-card)] border-b border-[var(--border-color)]">
+                        <div class="bg-[var(--bg-secondary)] p-3 rounded-xl border-2 border-dashed border-[var(--border-color)] flex flex-between items-center gap-4 flex-wrap">
+                            <div class="flex-1 min-w-[150px]">
+                                <span class="text-[10px] font-black uppercase opacity-60 block">AI Prompt Helper</span>
+                                <span class="text-[10px] opacity-40 block">For ChatGPT/Gemini</span>
+                            </div>
+                            <button onclick="window.copyPrompt()" id="copy-btn" class="bubbly-btn px-6 py-2 text-xs shadow-md flex items-center gap-2 whitespace-nowrap">Copy Template 📋</button>
+                        </div>
+                    </div>
+                    <textarea id="json-input" class="flex-1 p-6 font-mono text-xs resize-none outline-none custom-scroll bg-[var(--input-bg)]" placeholder="Paste your JSON code here...">${JSON.stringify(l.questions, null, 2)}</textarea>
+                    <div class="p-4"><button onclick="window.saveJson()" class="bubbly-btn w-full py-3 shadow-lg">SAVE QUESTIONS 💾</button></div>`;
+                 }
+            }
+            // Planner View
+            else if (view === 'planner') {
+                container.innerHTML = `<div class="p-6 bg-[var(--bg-secondary)] flex justify-between items-center border-b-2 border-[var(--border-color)]"><button onclick="window.setView('dashboard')" class="text-xs font-black uppercase text-[var(--text-secondary)] hover:text-[var(--accent-color)]">◀ Back to Hub</button><h2 class="font-bold uppercase tracking-widest text-sm text-[var(--accent-color)]">Planner & Schedule</h2><div class="w-10"></div></div><div class="p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-8"><div class="bg-[var(--bg-card)] p-8 shadow-soft relative overflow-hidden rounded-[2.5rem]"><h3 class="font-black text-[var(--accent-color)] uppercase tracking-widest text-sm mb-6 border-b border-[var(--border-color)] pb-2">Weekly Schedule</h3><div class="overflow-x-auto"><table class="sched-table" id="planner-schedule-table"></table></div><div class="mt-6 flex gap-2 border-t border-[var(--border-color)] pt-6 bg-[var(--bg-secondary)] p-4 rounded-2xl"><select id="sched-day" class="p-2 text-xs w-24 bg-white"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option></select><input type="time" id="sched-time" class="p-2 text-xs w-28 bg-white"><input type="text" id="sched-subj" placeholder="Subject..." class="flex-1 p-2 text-xs bg-white"><button onclick="window.addClass()" class="bubbly-btn px-4 text-xs shadow-md">Add</button></div></div>
+                <div class="bg-[var(--bg-card)] p-8 shadow-soft rounded-[2.5rem]">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="window.changeMonth(-1)" class="btn-secondary px-3">◀</button>
+                        <h3 class="font-bold text-lg text-[var(--text-primary)]" id="calendar-header">Month Year</h3>
+                        <button onclick="window.changeMonth(1)" class="btn-secondary px-3">▶</button>
+                    </div>
+                    <div class="calendar-grid mb-6" id="calendar-grid"></div>
+                    <div class="border-t pt-6 border-[var(--border-color)]">
+                        <h4 class="font-bold text-xs uppercase tracking-widest text-[var(--accent-color)] mb-4" id="selected-date-header">Events for Selected Date</h4>
+                        <div id="day-event-list" class="flex flex-wrap gap-2 mb-4 min-h-[40px]"></div>
+                        <div class="flex flex-col gap-2">
+                            <div class="flex gap-2">
+                                <input id="event-input" type="text" placeholder="New Event..." class="flex-1 p-3 text-xs bg-[var(--bg-secondary)]">
+                                <input id="event-time" type="time" class="p-2 text-xs w-20 bg-[var(--bg-secondary)]" title="Event Time">
+                            </div>
+                            <textarea id="event-details" placeholder="Add details..." class="w-full p-2 text-xs bg-[var(--bg-secondary)] rounded-xl h-16 resize-none"></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <select id="event-alarm-offset" class="p-2 text-xs w-24 bg-[var(--bg-secondary)]" title="Reminder Time">
+                                    <option value="at_time">At time</option>
+                                    <option value="5_min">5m before</option>
+                                    <option value="15_min">15m before</option>
+                                    <option value="30_min">30m before</option>
+                                    <option value="1_hour">1h before</option>
+                                    <option value="1_day">1d before</option>
+                                </select>
+                                <select id="event-repeat" class="p-2 text-xs w-20 bg-[var(--bg-secondary)]">
+                                    <option value="none">Once</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                                <button onclick="window.addCalendarEvent()" class="btn-secondary px-4 text-xs font-bold">Add Event</button>
+                                ${window.appState.clipboardEvent ? `<button onclick="window.pasteEvent()" class="bubbly-btn px-4 text-xs font-bold bg-yellow-400 border-yellow-500 text-white shadow-md">Paste 📋</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div></div>`;
+                window.renderPlannerSchedule();
+                window.renderCalendar();
+            }
+            // Other simple views
+            else if (view === 'profile') {
+                const user = window.appState.userProfile;
+                const totalSubjects = window.appState.subjects.length;
+                const totalLessons = window.appState.subjects.reduce((acc, s) => acc + s.lessons.length, 0);
+                const totalQuestions = window.appState.subjects.reduce((acc, s) => acc + s.lessons.reduce((lAcc, l) => lAcc + l.questions.length, 0), 0);
+
+                container.innerHTML = `
+                    <div class="bg-[var(--bg-secondary)] p-6 flex justify-between items-center border-b-2 border-[var(--border-color)]">
+                        <button onclick="window.setView('dashboard')" class="text-xs font-black uppercase text-[var(--text-secondary)] hover:text-[var(--accent-color)] flex items-center gap-1 transition">◀ Back to Hub</button>
+                        <h2 class="font-bold text-lg text-[var(--accent-color)]">My Profile</h2>
+                        <div class="w-10"></div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto custom-scroll p-8">
+                        <div class="max-w-md mx-auto bg-[var(--bg-card)] p-8 rounded-[2.5rem] border-2 border-[var(--border-color)] shadow-sm text-center">
+                            
+                            <div class="profile-img-container mb-6" onclick="document.getElementById('avatar-input').click()">
+                                ${user.avatar 
+                                    ? `<img src="${user.avatar}" class="profile-img">` 
+                                    : `<div class="w-full h-full flex items-center justify-center text-5xl bg-[var(--bg-secondary)]">${themeAvatar}</div>`
+                                }
+                                <div class="profile-edit-icon">EDIT</div>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <h2 class="text-3xl font-black text-[var(--text-primary)] cursor-pointer hover:text-[var(--accent-color)] transition" onclick="window.editProfileName()">${user.name} ✎</h2>
+                                <p class="text-sm font-bold opacity-60 mt-1 cursor-pointer hover:text-[var(--accent-color)] transition" onclick="window.editProfileBio()">${user.bio} ✎</p>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="bg-[var(--bg-secondary)] p-4 rounded-2xl border border-[var(--border-color)]">
+                                    <span class="block text-2xl font-black text-[var(--accent-color)]">${totalSubjects}</span>
+                                    <span class="text-[10px] font-bold uppercase opacity-50">Subjects</span>
+                                </div>
+                                <div class="bg-[var(--bg-secondary)] p-4 rounded-2xl border border-[var(--border-color)]">
+                                    <span class="block text-2xl font-black text-[var(--accent-color)]">${totalLessons}</span>
+                                    <span class="text-[10px] font-bold uppercase opacity-50">Lessons</span>
+                                </div>
+                                <div class="bg-[var(--bg-secondary)] p-4 rounded-2xl border border-[var(--border-color)]">
+                                    <span class="block text-2xl font-black text-[var(--accent-color)]">${totalQuestions}</span>
+                                    <span class="text-[10px] font-bold uppercase opacity-50">Questions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (view === 'quiz-setup') {
+                const s = window.appState.currentSubject;
+                if(!s) { window.setView('dashboard'); return; }
+                const targetLesson = window.appState.tempLessonId === 'all' ? 'All Lessons' : s.lessons.find(l => l.id === window.appState.tempLessonId).title;
+                const totalQ = window.appState.tempLessonId === 'all' ? s.lessons.reduce((acc, l) => acc + l.questions.length, 0) : s.lessons.find(l => l.id === window.appState.tempLessonId).questions.length;
+                container.innerHTML = `
+                    <div class="bg-[var(--bg-secondary)] p-6 flex justify-between items-center border-b-2 border-[var(--border-color)]">
+                        <button onclick="window.setView('subject', '${s.id}')" class="text-xs font-black uppercase text-[var(--text-secondary)] hover:text-[var(--accent-color)]">◀ Cancel</button>
+                        <h2 class="font-bold text-lg text-[var(--accent-color)]">Configuration</h2>
+                        <div class="w-10"></div>
+                    </div>
+                    <div class="p-8 flex-1 overflow-y-auto custom-scroll flex flex-col items-center justify-center">
+                        <div class="bg-[var(--bg-card)] p-10 rounded-[3rem] border-4 border-[var(--border-color)] text-center w-full max-w-md shadow-soft relative">
+                             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-white dark:bg-[#1f1b29] p-3 rounded-full border-4 border-[var(--border-color)] text-4xl shadow-sm">⚙️</div>
+                            <h3 class="font-black text-3xl mb-1 text-[var(--text-primary)] mt-4">${targetLesson}</h3>
+                            <p class="text-xs opacity-60 font-bold mb-8 uppercase tracking-widest">${totalQ} Questions Available</p>
+                            
+                            <div class="space-y-5 text-left bg-[var(--bg-secondary)] p-6 rounded-[2rem]">
+                                <div>
+                                    <label class="text-[10px] font-black uppercase ml-3 opacity-50 mb-1 block">Question Count</label>
+                                    <input type="number" id="quiz-count" class="w-full p-3 text-center" placeholder="Enter number (e.g. 5) or leave for ALL">
+                                </div>
+                                <div><label class="text-[10px] font-black uppercase ml-3 opacity-50 mb-1 block">Timer Mode</label><select id="quiz-mode" class="w-full" onchange="window.toggleTimeInput(this.value)"><option value="none">No Timer</option><option value="question">Per Question</option><option value="set">Whole Set</option></select></div>
+                                <div id="time-input-div" class="hidden"><label class="text-[10px] font-black uppercase ml-3 opacity-50 mb-1 block">Time Limit</label><input type="number" id="quiz-time-val" value="30" class="w-full text-center"></div>
+                            </div>
+                            <button onclick="window.startQuiz()" class="bubbly-btn w-full mt-8 py-4 text-xl shadow-xl hover:scale-105 transition">START 🚀</button>
+                            <button onclick="window.startSmartQuiz()" class="btn-secondary w-full mt-2 py-3 text-sm shadow-md border-2 border-[var(--accent-color)] text-[var(--accent-color)] font-bold hover:bg-[var(--accent-color)] hover:text-white transition">Smart Review 🧠</button>
+                            <div class="flex gap-2 mt-4">
+                                <button onclick="window.startFlashcards()" class="flex-1 btn-secondary py-3 text-xs">🎴 Flashcards</button>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            else if (view === 'flashcards') {
+                 const session = window.appState.flashcardSession;
+                 const card = session.list[session.index];
+                 const total = session.list.length;
+                 const isFlipped = session.flipped;
+                 
+                 container.innerHTML = `
+                    <div class="bg-[var(--bg-secondary)] p-4 flex justify-between items-center border-b border-[var(--border-color)]">
+                        <button onclick="window.setView('quiz-setup')" class="text-xs font-black uppercase text-[var(--accent-color)]">◀ Back</button>
+                        <span class="font-bold">Flashcard ${session.index + 1} / ${total}</span>
+                        <div class="w-10"></div>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-center p-8 overflow-hidden">
+                         <div class="flashcard-container ${isFlipped ? 'flipped' : ''}" onclick="window.flipCard()">
+                            <div class="flashcard-inner">
+                                <div class="flashcard-front">
+                                    <span class="text-xs font-bold uppercase opacity-40 mb-4 tracking-widest">Question</span>
+                                    ${card.image ? `<img src="${card.image}" class="max-h-32 object-contain mb-4 rounded-lg">` : ''}
+                                    <p class="text-2xl font-black text-center">${card.question}</p>
+                                    <div class="absolute bottom-4 text-[10px] opacity-40">Tap to flip ↷</div>
+                                </div>
+                                <div class="flashcard-back">
+                                    <span class="text-xs font-bold uppercase opacity-40 mb-4 tracking-widest">Answer</span>
+                                    <p class="text-xl font-bold text-center text-[var(--accent-color)] mb-4">${card.answer}</p>
+                                    ${card.explanation ? `<p class="text-xs opacity-70 bg-white/10 p-2 rounded-lg">${card.explanation}</p>` : ''}
+                                </div>
+                            </div>
+                         </div>
+                         <div class="flex gap-8 mt-10">
+                            <button onclick="window.prevCard()" class="btn-secondary px-6 py-3 text-xl">◀</button>
+                            <button onclick="window.nextCard()" class="btn-secondary px-6 py-3 text-xl">▶</button>
+                         </div>
+                    </div>
+                 `;
+            }
+        };
+
+        /* --- CALENDAR LOGIC --- */
+        window.changeMonth = (offset) => {
+            const d = new Date(window.appState.planner.viewDate);
+            d.setMonth(d.getMonth() + offset);
+            window.appState.planner.viewDate = d.toISOString().split('T')[0];
+            window.saveData();
+            window.renderCalendar();
+        };
+
+        window.selectDate = (dateStr) => {
+            window.appState.planner.selectedDate = dateStr;
+            window.saveData();
+            window.renderCalendar(); 
+        };
+
+        window.renderCalendar = () => {
+            const grid = document.getElementById('calendar-grid');
+            if(!grid) return;
+            
+            const viewDate = new Date(window.appState.planner.viewDate);
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            
+            document.getElementById('calendar-header').innerText = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+            
+            grid.innerHTML = '';
+            
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => {
+                grid.innerHTML += `<div class="calendar-header-day">${d}</div>`;
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            for(let i=0; i<firstDay; i++) {
+                grid.innerHTML += `<div class="calendar-day muted"></div>`;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const selDate = window.appState.planner.selectedDate;
+
+            for(let day=1; day<=daysInMonth; day++) {
+                const dateStr = new Date(year, month, day, 12).toISOString().split('T')[0]; 
+                const isToday = dateStr === today;
+                const isSelected = dateStr === selDate;
+                
+                const hasEvents = (window.appState.planner.events || []).some(e => window.checkEventOccurrence(e, dateStr));
+                
+                grid.innerHTML += `
+                    <div onclick="window.selectDate('${dateStr}')" 
+                         class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}">
+                        <span>${day}</span>
+                        ${hasEvents ? '<div class="event-dot"></div>' : ''}
+                    </div>
+                `;
+            }
+            
+            window.renderDayEvents();
+        };
+
+        window.checkEventOccurrence = (e, dateStr) => {
+            if(!e.date) return false;
+            const target = new Date(dateStr);
+            const start = new Date(e.date);
+            target.setHours(0,0,0,0); start.setHours(0,0,0,0);
+            
+            if(target < start) return false;
+
+            if (e.repeat === 'daily') return true;
+            if (e.repeat === 'weekly') return target.getDay() === start.getDay();
+            if (e.repeat === 'monthly') return target.getDate() === start.getDate();
+            if (e.repeat === 'yearly') return target.getDate() === start.getDate() && target.getMonth() === start.getMonth();
+            return dateStr === e.date; 
+        };
+
+        window.renderDayEvents = () => {
+            const list = document.getElementById('day-event-list');
+            const selDate = window.appState.planner.selectedDate;
+            const displayDate = new Date(selDate).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric'});
+            
+            document.getElementById('selected-date-header').innerText = `Events for ${displayDate}`;
+            
+            const events = (window.appState.planner.events || []).filter(e => window.checkEventOccurrence(e, selDate));
+            
+            if(events.length === 0) {
+                list.innerHTML = '<span class="opacity-40 text-xs italic">No events planned. Drag here to add or use input below.</span>';
+            } else {
+                list.innerHTML = events.map((e, i) => `
+                    <div onclick="window.viewEventDetails('${e.id}')" class="draggable-event bg-[var(--bg-secondary)] px-3 py-2 rounded-xl text-xs border border-[var(--border-color)] font-bold shadow-sm flex items-center gap-2 group hover:border-[var(--accent-color)] transition select-none cursor-pointer">
+                        ${e.time ? `<span class="mr-1">⏰ ${e.time}</span>` : ''} 
+                        ${e.repeat !== 'none' ? '↻ ' : ''} ${e.title}
+                        ${e.details ? '<span class="ml-1 text-[8px] bg-blue-100 text-blue-500 rounded-full px-1">i</span>' : ''}
+                        <div class="ml-auto flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                            <button onclick="event.stopPropagation(); window.copyEvent('${e.id}')" class="text-[var(--accent-color)] hover:scale-110" title="Copy">❐</button>
+                            <button onclick="event.stopPropagation(); window.deleteEvent('${e.id}')" class="text-red-400 hover:scale-110" title="Delete">✕</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        };
+
+        window.viewEventDetails = (id) => {
+            const e = window.appState.planner.events.find(ev => ev.id === id);
+            if(e) {
+                window.showCustomModal(e.title, `<p class="whitespace-pre-wrap">${e.details || 'No details provided.'}</p>`, `<button onclick="window.closeCustomModal()" class="bubbly-btn px-6">Close</button>`, '📅');
+            }
+        };
+
+        /* --- COPY / PASTE LOGIC --- */
+        window.copyEvent = (id) => {
+            const e = window.appState.planner.events.find(ev => ev.id === id);
+            if(e) {
+                window.appState.clipboardEvent = { ...e }; // Clone it
+                window.showToast("Event Copied! 📋");
+                window.renderMain(); // Re-render to show Paste button
+            }
+        };
+
+        window.pasteEvent = () => {
+            if(!window.appState.clipboardEvent) return;
+            const newEvent = {
+                ...window.appState.clipboardEvent,
+                id: Date.now().toString(),
+                date: window.appState.planner.selectedDate // Paste to currently selected date
+            };
+            window.appState.planner.events.push(newEvent);
+            window.saveData(); window.renderCalendar(); window.showToast("Event Pasted! ✨");
+        };
+
+        window.addCalendarEvent = () => {
+            const title = document.getElementById('event-input').value;
+            const time = document.getElementById('event-time').value;
+            const offset = document.getElementById('event-alarm-offset').value;
+            const repeat = document.getElementById('event-repeat').value;
+            const details = document.getElementById('event-details').value;
+            const date = window.appState.planner.selectedDate;
+            
+            if(title) {
+                if(!window.appState.planner.events) window.appState.planner.events = [];
+                window.appState.planner.events.push({
+                    id: Date.now().toString(),
+                    title: title,
+                    date: date,
+                    time: time,
+                    details: details,
+                    alarmOffset: offset,
+                    repeat: repeat || 'none'
+                });
+                window.saveData();
+                document.getElementById('event-input').value = '';
+                document.getElementById('event-details').value = '';
+                window.renderCalendar();
+            }
+        };
+
+        window.deleteEvent = (id) => {
+            window.showConfirm("Delete this event?", () => {
+                window.appState.planner.events = window.appState.planner.events.filter(e => e.id !== id);
+                window.saveData();
+                window.renderCalendar();
+            });
+        };
+
+        /* --- FIXED SIDE TAB LOGIC --- */
+        window.setSideTab = function(tab) {
+            // Hide all contents
+            ['resources', 'schedule', 'timer', 'music'].forEach(t => {
+                const content = document.getElementById(`side-content-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (content) content.classList.add('hidden');
+                if (btn) btn.classList.remove('bg-[var(--bg-secondary)]', 'text-[var(--accent-color)]', 'active');
+            });
+            // Show selected
+            const selectedContent = document.getElementById(`side-content-${tab}`);
+            const selectedBtn = document.getElementById(`tab-${tab}`);
+            if (selectedContent) selectedContent.classList.remove('hidden');
+            if (selectedBtn) selectedBtn.classList.add('bg-[var(--bg-secondary)]', 'text-[var(--accent-color)]', 'active');
+        };
+
+        window.renderSidePanel = function() {
+            const s = window.appState.currentSubject;
+            const noteArea = document.getElementById('note-area');
+            if (noteArea) {
+                noteArea.value = s ? (s.notes || "") : "Select a subject first!";
+                noteArea.disabled = !s;
+            }
+            const schedTable = document.getElementById('side-schedule-table');
+            if(schedTable) window.renderScheduleTable(schedTable, false);
+            
+            // Render Photos
+            const gallery = document.getElementById('photo-gallery');
+            if (gallery) {
+                if (s && s.photos && s.photos.length > 0) {
+                    gallery.innerHTML = s.photos.map((src, idx) => 
+                        `<div class="photo-wrapper relative group shrink-0">
+                            <img src="${src}" onclick="window.showMedia('${src}')" class="h-32 w-32 object-cover rounded-2xl border-2 border-[var(--border-color)] cursor-pointer hover:scale-105 transition shadow-sm">
+                            <button onclick="window.deletePhoto(${idx})" class="delete-photo-btn absolute top-1 right-1 bg-red-400 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 transition-opacity shadow-md hover:scale-110">✕</button>
+                         </div>`
+                    ).join('');
+                } else {
+                    gallery.innerHTML = '<span class="text-[10px] opacity-40 italic w-full text-center">No Photos</span>';
+                }
+            }
+
+            // Render Files
+            const fileList = document.getElementById('file-list');
+            if (fileList) {
+                if (s && s.files && s.files.length > 0) {
+                    fileList.innerHTML = s.files.map((f, i) => `
+                        <div class="flex items-center justify-between p-3 bg-[var(--bg-secondary)] rounded-2xl text-[12px] font-bold border border-[var(--border-color)] group hover:border-[var(--accent-color)] transition">
+                            <span class="truncate max-w-[150px] cursor-pointer" onclick="window.downloadFile(${i})">📄 ${f.name}</span>
+                            <button onclick="window.deleteFile(${i})" class="text-red-400 opacity-0 group-hover:opacity-100 transition px-2">✕</button>
+                        </div>
+                    `).join('');
+                } else {
+                    fileList.innerHTML = '<span class="text-[10px] opacity-40 italic pl-2 text-center w-full">No Files</span>';
+                }
+            }
+
+            // Update Pomodoro Stats if visible
+            const stats = document.getElementById('pomodoro-total');
+            if(stats) {
+                const totalMins = Math.floor(window.appState.studyTimer.totalFocusTime / 60);
+                stats.innerText = `${totalMins}m`;
+            }
+        };
+
+        /* --- FEATURES LOGIC --- */
+        window.editTitle = () => { window.showPrompt("New Title:", window.appState.title, (n) => { window.appState.title = n; window.saveData(); window.renderMain(); }); };
+        window.editSubtitle = () => { window.showPrompt("New Subtitle:", window.appState.subtitle, (n) => { window.appState.subtitle = n; window.saveData(); window.renderMain(); }); };
+
+        window.editSubject = (id) => { const s = window.appState.subjects.find(sub => sub.id === id); if (!s) return; window.showPrompt("Rename Subject:", s.title, (newName) => { if(newName.trim()) { s.title = newName.trim(); window.saveData(); window.renderMain(); } }); };
+        window.editLesson = (lessonId) => { const s = window.appState.currentSubject; const l = s.lessons.find(less => less.id === lessonId); if (!l) return; window.showPrompt("Rename Lesson:", l.title, (newName) => { if(newName.trim()) { l.title = newName.trim(); window.saveData(); window.renderMain(); } }); };
+        window.deleteLesson = (lessonId) => { const s = window.appState.currentSubject; window.showConfirm("Delete this lesson?", () => { s.lessons = s.lessons.filter(l => l.id !== lessonId); window.saveData(); window.renderMain(); }); };
+        window.addLesson = () => { window.showPrompt("Lesson Name:", "", (name) => { if(name) { window.appState.currentSubject.lessons.push({id: Date.now().toString(), title: name, questions: []}); window.saveData(); window.renderMain(); } }); };
+        
+        window.openQuizSetup = (lessonId) => {
+            window.appState.tempLessonId = lessonId;
+            const s = window.appState.currentSubject;
+            const qCount = lessonId === 'all' 
+                ? s.lessons.reduce((acc, l) => acc + l.questions.length, 0)
+                : s.lessons.find(l => l.id === lessonId).questions.length;
+            if(qCount === 0) return window.showAlert("No questions available!");
+            window.setView('quiz-setup');
+        };
+
+        window.toggleTimeInput = (val) => { const div = document.getElementById('time-input-div'); if(val === 'none') div.classList.add('hidden'); else { div.classList.remove('hidden'); document.querySelector('#time-input-div label').innerText = val === 'question' ? 'Seconds per Q' : 'Minutes Total'; } };
+
+        window.startQuiz = () => {
+            const s = window.appState.currentSubject;
+            const countInput = document.getElementById('quiz-count').value;
+            const mode = document.getElementById('quiz-mode').value;
+            const timeVal = parseInt(document.getElementById('quiz-time-val').value) || 0;
+            
+            let q = [];
+            if(window.appState.tempLessonId === 'all') s.lessons.forEach(l => q = q.concat(l.questions));
+            else q = [...s.lessons.find(l => l.id === window.appState.tempLessonId).questions];
+            
+            // Randomize
+            for (let i = q.length - 0; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [q[i], q[j]] = [q[j], q[i]]; }
+            
+            // Limit by count (if input is valid)
+            if (countInput && countInput.trim() !== "") {
+                const limit = parseInt(countInput);
+                if (!isNaN(limit) && limit > 0) {
+                    q = q.slice(0, limit);
+                }
+            }
+            
+            // Init results array
+            const results = new Array(q.length).fill('pending');
+
+            window.appState.quiz = {
+                active: true, questions: q, results: results, index: 0, score: 0, wrongAnswers: [],
+                timerMode: mode, timerLimit: mode === 'set' ? timeVal * 60 : timeVal, timeLeft: mode === 'set' ? timeVal * 60 : timeVal, timerId: null,
+                lessonTitle: window.appState.tempLessonId === 'all' ? 'Full Subject Review' : s.lessons.find(l => l.id === window.appState.tempLessonId).title
+            };
+            window.saveData(); window.setView('quiz'); window.startQuizTimer();
+        };
+
+        // Mastery Mode: Retry only wrong answers
+        window.startMasteryQuiz = () => {
+            const mistakes = window.appState.quiz.questions.filter((q, i) => window.appState.quiz.results[i] === 'wrong');
+            if(mistakes.length === 0) return window.showAlert("No mistakes to retry!");
+
+            const results = new Array(mistakes.length).fill('pending');
+            
+            window.appState.quiz = {
+                ...window.appState.quiz, questions: mistakes, results: results, index: 0, score: 0, wrongAnswers: [],
+                timeLeft: window.appState.quiz.timerLimit, // Reset time
+                lessonTitle: 'Mastery Retry 🧠'
+            };
+            window.saveData(); window.setView('quiz'); window.startQuizTimer();
+        };
+
+        // Spaced Repetition Logic (Smart Review)
+        window.startSmartQuiz = () => {
+            const s = window.appState.currentSubject;
+            let allQuestions = [];
+            
+            if(window.appState.tempLessonId === 'all') {
+                s.lessons.forEach(l => allQuestions = allQuestions.concat(l.questions));
+            } else {
+                allQuestions = [...s.lessons.find(l => l.id === window.appState.tempLessonId).questions];
+            }
+            
+            if(allQuestions.length === 0) return window.showAlert("No questions available!");
+
+            // Sort by mastery (low to high), then take top 15
+            allQuestions.sort((a, b) => (a.mastery || 0) - (b.mastery || 0));
+            const reviewSet = allQuestions.slice(0, 15);
+
+            const results = new Array(reviewSet.length).fill('pending');
+
+            window.appState.quiz = {
+                active: true, questions: reviewSet, results: results, index: 0, score: 0, wrongAnswers: [],
+                timerMode: 'none', timerLimit: 0, timeLeft: 0, timerId: null,
+                lessonTitle: '🧠 Smart Review'
+            };
+            window.saveData(); window.setView('quiz'); window.startQuizTimer();
+        };
+
+        /* --- FLASHCARD LOGIC --- */
+        window.startFlashcards = () => {
+             const s = window.appState.currentSubject;
+             let q = [];
+             if(window.appState.tempLessonId === 'all') s.lessons.forEach(l => q = q.concat(l.questions));
+             else q = [...s.lessons.find(l => l.id === window.appState.tempLessonId).questions];
+
+             if(q.length === 0) return window.showAlert("No cards available!");
+             
+             // Shuffle
+             for (let i = q.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [q[i], q[j]] = [q[j], q[i]]; }
+
+             window.appState.flashcardSession = { active: true, list: q, index: 0, flipped: false };
+             window.setView('flashcards');
+        };
+
+        window.flipCard = () => {
+            window.appState.flashcardSession.flipped = !window.appState.flashcardSession.flipped;
+            window.renderMain();
+        };
+
+        window.nextCard = () => {
+            if (window.appState.flashcardSession.index < window.appState.flashcardSession.list.length - 1) {
+                window.appState.flashcardSession.index++;
+                window.appState.flashcardSession.flipped = false;
+                window.renderMain();
+            } else {
+                window.showToast("End of stack! 🎉");
+            }
+        };
+
+        window.prevCard = () => {
+            if (window.appState.flashcardSession.index > 0) {
+                window.appState.flashcardSession.index--;
+                window.appState.flashcardSession.flipped = false;
+                window.renderMain();
+            }
+        };
+
+        window.resumeQuiz = () => { window.setView('quiz'); window.startQuizTimer(); };
+        window.startQuizTimer = () => {
+            if (window.appState.quiz.timerMode === 'none') return;
+            if(window.appState.quiz.timerMode === 'question') window.appState.quiz.timeLeft = window.appState.quiz.timerLimit;
+            clearInterval(window.appState.quiz.timerId);
+            window.appState.quiz.timerId = setInterval(() => {
+                window.appState.quiz.timeLeft--;
+                const d = document.getElementById('quiz-timer-display');
+                if(d) { const m = Math.floor(window.appState.quiz.timeLeft / 60); const s = (window.appState.quiz.timeLeft % 60).toString().padStart(2,'0'); d.innerText = `⏱️ ${m}:${s}`; }
+                if (window.appState.quiz.timeLeft <= 0) {
+                    clearInterval(window.appState.quiz.timerId);
+                    if (window.appState.quiz.timerMode === 'question') window.handleAnswer('TIMEOUT');
+                    else { window.showAlert("Time's up!"); window.setView('results'); }
+                }
+            }, 1000);
+        };
+
+        window.jumpToQuestion = (index) => {
+            window.appState.quiz.index = index;
+            window.setView('quiz');
+        };
+
+        window.handleAnswer = (ans) => {
+            if(document.getElementById('next-btn').disabled === false && document.getElementById('quiz-feedback').classList.contains('hidden') === false) return;
+
+            const q = window.appState.quiz.questions[window.appState.quiz.index];
+            const fb = document.getElementById('quiz-feedback');
+            const avatar = document.getElementById('cat-avatar');
+            document.getElementById('cat-hint-bubble').classList.add('hidden');
+            
+            if (window.appState.quiz.timerMode === 'question') clearInterval(window.appState.quiz.timerId);
+            fb.classList.remove('hidden'); 
+            
+            let isCorrect = false; let isClose = false;
+            
+            if (q.type === 'id') {
+                const user = ans.trim().toLowerCase();
+                const correct = q.answer.trim().toLowerCase();
+                if (user === correct) isCorrect = true;
+                else if (correct.length > 3) { 
+                    const dist = getLevenshtein(user, correct); 
+                    const threshold = correct.length > 6 ? 2 : 1; 
+                    if (dist <= threshold) { isCorrect = true; isClose = true; } 
+                }
+                if (!isCorrect && user.length > 3 && correct.includes(user)) {
+                    isCorrect = true; isClose = true;
+                }
+            } else isCorrect = ans === q.answer;
+
+            if (isCorrect) {
+                window.appState.quiz.score++;
+                window.appState.quiz.results[window.appState.quiz.index] = 'correct';
+                q.mastery = (q.mastery || 0) + 1;
+                if (isClose) { fb.classList.add('bg-orange-100', 'text-orange-700', 'border-orange-200'); fb.innerHTML = `😼 Close enough! Canonical answer: <b>${q.answer}</b>`; avatar.innerText = '😼'; }
+                else { fb.classList.add('bg-green-100', 'text-green-700', 'border-green-200'); fb.innerHTML = `✨ Correct!`; avatar.innerText = '😻'; }
+            } else {
+                if(ans === 'SKIPPED') {
+                    window.appState.quiz.results[window.appState.quiz.index] = 'skipped';
+                    fb.classList.add('bg-gray-100', 'text-gray-700', 'border-gray-200'); fb.innerHTML = `⏭️ Skipped. Answer: <b>${q.answer}</b>`; avatar.innerText = '🐱';
+                } else {
+                    window.appState.quiz.results[window.appState.quiz.index] = 'wrong';
+                    q.mastery = Math.max(0, (q.mastery || 0) - 2); 
+                    fb.classList.add('bg-red-100', 'text-red-700', 'border-red-200'); fb.innerHTML = `❌ Answer: <b>${q.answer}</b>`; avatar.innerText = '😿';
+                    window.appState.quiz.wrongAnswers.push({q: q.question, u: ans === 'TIMEOUT' ? 'Timed Out' : ans, a: q.answer, e: q.explanation});
+                }
+            }
+            
+            fb.innerHTML += `<button onclick="window.askAiExplain()" id="why-kitty-btn" class="mt-4 w-full text-xs font-bold bg-white/50 border-2 border-dashed border-[var(--accent-color)] text-[var(--accent-color)] py-2 rounded-xl hover:bg-white transition flex items-center justify-center gap-2">🐱 Tell me why, Kitty?</button>
+            <div id="ai-explain-area" class="mt-2 text-xs text-left italic bg-white/60 p-2 rounded-lg hidden"></div>`;
+
+            avatar.classList.add('cat-pop'); window.saveData();
+            
+            // Re-render nav to update colors without full reload
+            const navDots = document.querySelectorAll('.quiz-nav-dot');
+            if(navDots[window.appState.quiz.index]) {
+                navDots[window.appState.quiz.index].className = `quiz-nav-dot active ${isCorrect?'correct':(ans==='SKIPPED'?'skipped':'wrong')}`;
+            }
+
+            const input = document.getElementById('id-input'); if(input) input.disabled = true;
+            document.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; if(b.innerText.trim() === q.answer.trim()) b.classList.add('bg-green-100', 'border-green-400'); else if(b.innerText.trim() === ans) b.classList.add('bg-red-100', 'border-red-400'); });
+        };
+
+        window.prevQuestion = () => {
+            if (window.appState.quiz.index > 0) {
+                window.appState.quiz.index--;
+                window.setView('quiz');
+            }
+        };
+
+        window.nextQuestion = () => { 
+            // Check if answered
+            const currentResult = window.appState.quiz.results[window.appState.quiz.index];
+            if (currentResult === 'pending') {
+                 // Mark as skipped if moving forward without answering
+                 window.handleAnswer('SKIPPED');
+                 setTimeout(() => window.proceedNext(), 1000);
+            } else {
+                window.proceedNext();
+            }
+        };
+
+        window.proceedNext = () => {
+            if (window.appState.quiz.index < window.appState.quiz.questions.length - 1) { 
+                window.appState.quiz.index++; 
+                window.saveData(); 
+                window.setView('quiz'); 
+                if(window.appState.quiz.timerMode === 'question') window.startQuizTimer(); 
+            } else { 
+                window.finishQuiz(); 
+            }
+        };
+
+        window.finishQuiz = () => {
+            // Strict Streak Logic: Only update if quiz had >= 10 questions and score > 0
+            if (window.appState.quiz.questions.length >= 10 && window.appState.quiz.score > 0) {
+                window.checkStreak();
+            } else {
+                window.showToast("Quiz Complete! (Do 10+ Qs to build streak)");
+            }
+            window.exitQuiz(true);
+        };
+
+        window.saveAndExitQuiz = () => { clearInterval(window.appState.quiz.timerId); window.saveData(); window.setView('dashboard'); };
+        window.exitQuiz = (finished = false) => { clearInterval(window.appState.quiz.timerId); if(finished) { window.appState.quiz.active = false; window.saveData(); window.setView('results'); } else { window.saveAndExitQuiz(); } };
+
+        /* --- GENERIC HELPERS --- */
+        window.saveJson = () => {
+            const val = document.getElementById('json-input').value.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
+            try {
+                const parsed = JSON.parse(val); if (!Array.isArray(parsed)) throw new Error("Not a list");
+                window.appState.currentLesson.questions = parsed; window.saveData(); window.showToast("Saved!"); window.setView('subject', window.appState.currentSubject.id);
+            } catch(e) { window.showAlert("Invalid JSON"); }
+        };
+
+        window.copyPrompt = () => { 
+            navigator.clipboard.writeText(PROMPT_TEMPLATE)
+            .then(() => window.showToast("Prompt Copied! 📋"))
+            .catch(() => window.showAlert("Failed to copy."));
+        };
+
+        window.handleImageInsert = (e) => {
+            const f = e.target.files[0];
+            if(!f) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const base64 = ev.target.result;
+                const txtArea = document.getElementById('json-input');
+                const startPos = txtArea.selectionStart;
+                const endPos = txtArea.selectionEnd;
+                const insertText = `\n    "image": "${base64}",`;
+                txtArea.value = txtArea.value.substring(0, startPos) + insertText + txtArea.value.substring(endPos, txtArea.value.length);
+                window.showToast("Image Code Inserted! 🖼️");
+            };
+            reader.readAsDataURL(f);
+        };
+
+        /* --- OFFLINE FEATURES --- */
+        window.askAiHint = () => {
+            const bubble = document.getElementById('cat-hint-bubble');
+            const q = window.appState.quiz.questions[window.appState.quiz.index];
+            bubble.classList.remove('hidden');
+            if (q.hint && q.hint.trim() !== "") bubble.innerHTML = `💡 ${q.hint}`;
+            else bubble.innerHTML = '😿 No hint provided for this question!';
+        };
+
+        window.askAiExplain = () => {
+            const btn = document.getElementById('why-kitty-btn');
+            const area = document.getElementById('ai-explain-area');
+            const q = window.appState.quiz.questions[window.appState.quiz.index];
+            btn.classList.add('hidden');
+            area.classList.remove('hidden');
+            if (q.explanation && q.explanation.trim() !== "") area.innerHTML = `🐱 <b>Kitty says:</b> ${q.explanation}`;
+            else area.innerHTML = '😿 I don\'t have an explanation for this one.';
+        };
+
+        window.backupData = () => { const blob = new Blob([JSON.stringify(window.appState, null, 2)], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `StudyHub_Backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url); };
+        window.triggerImport = () => document.getElementById('backup-input').click();
+        window.importBackup = (e) => { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { try { window.appState = JSON.parse(ev.target.result); window.saveData(); window.location.reload(); } catch(err) { window.showAlert("Bad File"); } }; r.readAsText(f); };
+        window.addSubject = () => { const n = document.getElementById('new-subj').value; if(n) { window.appState.subjects.push({id:Date.now().toString(), title:n, lessons:[], notes:""}); window.saveData(); window.renderMain(); }};
+        window.deleteSubject = (id) => { window.showConfirm("Delete?", () => { window.appState.subjects = window.appState.subjects.filter(s=>s.id!==id); window.saveData(); window.renderMain(); }); };
+        
+        window.handlePhotoUpload = (e) => {
+            if (!window.appState.currentSubject) return window.showAlert("Select a subject first!");
+            Array.from(e.target.files).forEach(f => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    if (!window.appState.currentSubject.photos) window.appState.currentSubject.photos = [];
+                    window.appState.currentSubject.photos.push(ev.target.result);
+                    window.saveData(); window.renderSidePanel();
+                };
+                reader.readAsDataURL(f);
+            });
+        };
+        window.handleFileUpload = (e) => {
+            if (!window.appState.currentSubject) return window.showAlert("Select a subject first!");
+            Array.from(e.target.files).forEach(f => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    if (!window.appState.currentSubject.files) window.appState.currentSubject.files = [];
+                    window.appState.currentSubject.files.push({name: f.name, data: ev.target.result});
+                    window.saveData(); window.renderSidePanel();
+                };
+                reader.readAsDataURL(f);
+            });
+        };
+        
+        window.showMedia = (src) => { document.getElementById('media-modal').classList.remove('hidden'); document.getElementById('media-modal').classList.add('flex'); document.getElementById('modal-content').innerHTML = `<img src="${src}" class="max-h-[85vh] rounded-xl shadow-2xl">`; };
+        window.closeModal = () => { document.getElementById('media-modal').classList.add('hidden'); document.getElementById('media-modal').classList.remove('flex'); };
+        window.downloadFile = (index) => { const f = window.appState.currentSubject.files[index]; const a = document.createElement('a'); a.href = f.data; a.download = f.name; a.click(); };
+        window.deleteFile = (index) => { window.showConfirm('Remove file?', () => { window.appState.currentSubject.files.splice(index, 1); window.saveData(); window.renderSidePanel(); }); };
+        window.deletePhoto = (index) => { window.showConfirm('Remove photo?', () => { window.appState.currentSubject.photos.splice(index, 1); window.saveData(); window.renderSidePanel(); }); };
+
+        window.saveNotes = () => { if(window.appState.currentSubject) { window.appState.currentSubject.notes = document.getElementById('note-area').value; window.saveData(); }};
+        window.downloadNotes = () => { if(!window.appState.currentSubject) return; const blob = new Blob([window.appState.currentSubject.notes], {type: "text/plain"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${window.appState.currentSubject.title}_notes.txt`; a.click(); };
+        window.renderScheduleTable = (table, editable) => { const order = { "Mon":1, "Tue":2, "Wed":3, "Thu":4, "Fri":5 }; const sorted = [...window.appState.planner.schedule].sort((a,b) => (order[a.day] - order[b.day]) || a.time.localeCompare(b.time)); table.innerHTML = `<thead><tr><th>Day</th><th>Time</th><th>Class</th>${editable?'<th></th>':''}</tr></thead><tbody>${sorted.map((s, i) => `<tr><td class="font-bold text-[var(--accent-color)]">${s.day}</td><td>${s.time}</td><td>${s.subj}</td>${editable ? `<td><button onclick="window.deleteClass(${i})" class="text-red-400 font-bold hover:scale-110 transition">✕</button></td>` : ''}</tr>`).join('')}</tbody>`; };
+        window.renderPlannerSchedule = () => window.renderScheduleTable(document.getElementById('planner-schedule-table'), true);
+        window.addClass = () => { const d = document.getElementById('sched-day').value; const t = document.getElementById('sched-time').value; const s = document.getElementById('sched-subj').value; if(t && s) { window.appState.planner.schedule.push({day:d, time:t, subj:s}); window.saveData(); window.renderPlannerSchedule(); } };
+        window.deleteClass = (i) => { window.appState.planner.schedule.splice(i, 1); window.saveData(); window.renderPlannerSchedule(); };
+
+        // Timer
+        window.updateTimerDisplay = () => { const m = Math.floor(window.appState.studyTimer.seconds/60).toString().padStart(2,'0'); const s = (window.appState.studyTimer.seconds%60).toString().padStart(2,'0'); document.getElementById('timer-display').innerText = `${m}:${s}`; };
+        window.toggleTimer = () => { if(window.appState.studyTimer.isRunning) { clearInterval(window.appState.studyTimer.intervalId); window.appState.studyTimer.isRunning=false; document.getElementById('btn-timer-toggle').innerText="▶"; } else { window.appState.studyTimer.isRunning=true; document.getElementById('btn-timer-toggle').innerText="⏸"; window.appState.studyTimer.intervalId = setInterval(()=>{ if(window.appState.studyTimer.seconds>0) {window.appState.studyTimer.seconds--; window.appState.studyTimer.totalFocusTime = (window.appState.studyTimer.totalFocusTime || 0) + 1; window.updateTimerDisplay();} else {clearInterval(window.appState.studyTimer.intervalId); window.appState.studyTimer.isRunning=false; window.showToast("Done!");} }, 1000); } };
+        window.resetTimer = () => { clearInterval(window.appState.studyTimer.intervalId); window.appState.studyTimer.isRunning=false; window.appState.studyTimer.seconds=window.appState.studyTimer.originalSeconds; window.updateTimerDisplay(); document.getElementById('btn-timer-toggle').innerText="▶"; };
+        window.setTimerDuration = () => { const v = document.getElementById('timer-input').value; window.appState.studyTimer.originalSeconds = v*60; window.resetTimer(); };
+
+        window.init();
+    </script>
+</body>
+</html>
